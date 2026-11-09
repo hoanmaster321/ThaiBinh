@@ -20,7 +20,7 @@ struct TweaksView: View {
                         Label("Dialer Keypad Themer", systemImage: "circle.grid.3x3.fill")
                     }
                     NavigationLink(destination: SpringBoardTweaksView()) {
-                        Label("SpringBoard & UI Animation Speed", systemImage: "bolt.horizontal.circle")
+                        Label("SpringBoard, PosterBoard & SystemGroup", systemImage: "sparkles.rectangle.stack")
                     }
                 } header: {
                     HeaderLabel("Theming & UI", symbol: "paintbrush")

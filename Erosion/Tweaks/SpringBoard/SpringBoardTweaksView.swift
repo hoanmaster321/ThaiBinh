@@ -2,216 +2,201 @@
 //  SpringBoardTweaksView.swift
 //  ErosionWQ
 //
-//  SpringBoard, Status Bar, Control Center & Home Screen Layout Studio via worse_query
+//  SpringBoard, Lock Screen, PosterBoard & SystemGroup Studio
+//  Strictly uses MCM container paths supported by worse_query:
+//  - /var/containers/Shared/SystemGroup/*
+//  - /var/mobile/Containers/Data/Application/* (com.apple.PosterBoard, com.apple.mobilephone, etc.)
+//  - /var/mobile/Containers/Data/PluginKitPlugin/*
+//  - /var/mobile/Containers/Shared/AppGroup/*
 //
 
 import SwiftUI
 
 struct SpringBoardTweaksView: View {
     @EnvironmentObject private var mgr: ErosionManager
+    @StateObject private var store = GestaltStore.shared
     @AppStorage("autoRespring") var autoRespring = false
     
-    private let sbPlistPath = "/var/mobile/Library/Preferences/com.apple.springboard.plist"
-    private let globalPlistPath = "/var/mobile/Library/Preferences/.GlobalPreferences.plist"
-    private let ccPlistPath = "/var/mobile/Library/ControlCenter/ModuleConfiguration.plist"
-    private let iconStatePath = "/var/mobile/Library/SpringBoard/IconState.plist"
-    private let desiredIconStatePath = "/var/mobile/Library/SpringBoard/DesiredIconState.plist"
+    // MCM SystemGroup paths (accessible via worse_query)
+    private let configProfilesDir = "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles"
+    private var sharedDevConfigPath: String {
+        (configProfilesDir as NSString).appendingPathComponent("SharedDeviceConfiguration.plist")
+    }
+    private let sbSharedSettingsDir = "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.SpringBoard.sharedsettings"
+    private let lsdIconsCacheDir = "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.lsd.iconscache/Library/Caches"
     
-    @State private var sbDict: [String: Any] = [:]
-    @State private var globalDict: [String: Any] = [:]
+    // Lock Screen Footnote & Asset Tag (SystemGroup configurationprofiles)
+    @State private var lockScreenFootnote = ""
+    @State private var assetTagText = ""
     
-    // UIKit Speed
-    @State private var animSpeed: Double = 1.0
+    // MobileGestalt SpringBoard / Camera keys (SystemGroup mobilegestaltcache)
+    private let shutterClickKey = "nFRqKto/RuQAV1P+0/qkBA" // RegionalBehaviorShutterClick
+    @State private var disableShutterSound = false
     
-    // Status Bar
-    @State private var showNumericWiFi = false
-    @State private var showNumericCellular = false
-    @State private var disableBreadcrumb = false
-    @State private var forceBatteryPercent = false
-    @State private var enableCustomTime = false
-    @State private var customTimeText = "9:41"
+    // PosterBoard Container (/var/mobile/Containers/Data/Application/*)
+    @State private var posterBoardContainer: String = ""
+    @State private var hasPosterBackup = false
     
-    // Lock Screen & SpringBoard Behavior
-    @State private var disableLockCamera = false
-    @State private var disableTodayView = false
-    @State private var preventAutoLock = false
-    @State private var enablePrototypeSettings = false
-    @State private var hideDockBackground = false
-    
-    // Control Center Modules
-    @State private var ccEnabledModules: Set<String> = []
-    @State private var hasIconBackup = false
-    
-    // Plist Inspector Sheet
+    // Navigation & Sheets
     @State private var inspectPlistURL: URL? = nil
     @State private var showPlistSheet = false
+    @State private var browseContainerURL: URL? = nil
     
     @State private var statusMessage = ""
     @State private var showStatusAlert = false
     
-    private let ccHiddenModules: [(id: String, title: String, icon: String)] = [
-        ("com.apple.springboard.SilentModeControlCenterModule", "Silent Mode (Bell Toggle)", "bell.slash.fill"),
-        ("com.apple.shazamkit.controlcenter.ShazamModule", "Music Recognition (Shazam)", "shazam.logo.fill"),
-        ("com.apple.accessibility.controlcenter.guidedaccess", "Guided Access", "lock.rectangle.on.rectangle"),
-        ("com.apple.accessibility.controlcenter.hearingdevices", "Hearing Devices & Background Sounds", "ear.fill"),
-        ("com.apple.AccessibilityUIServer.LiveTranscriptionModule", "Live Captions", "captions.bubble.fill"),
-        ("com.apple.control-center.LowPowerModule", "Low Power Mode", "battery.25")
-    ]
-    
     var body: some View {
         List {
-            // MARK: - 1. UIKit Animation Speed
+            // MARK: - 1. Lock Screen Banner & Asset Tag (SystemGroup configurationprofiles)
             Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Label("UI Animation Speed", systemImage: "gauge.with.dots.needle.67percent")
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text(speedLabel(animSpeed))
-                            .font(.subheadline)
-                            .foregroundStyle(.blue)
-                            .monospacedDigit()
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Lock Screen Bottom Footnote")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("Custom Lock Screen Text...", text: $lockScreenFootnote)
+                }
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Lock Screen Asset Tag (Device Info)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("e.g. Property of ThaiBinh...", text: $assetTagText)
+                }
+            } header: {
+                HeaderLabel("Lock Screen Text (SystemGroup)", symbol: "lock.iphone")
+            } footer: {
+                Text("Writes to /var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/SharedDeviceConfiguration.plist.")
+            }
+            
+            // MARK: - 2. SpringBoard & Camera Flags (SystemGroup mobilegestaltcache)
+            Section {
+                Toggle("Mute Camera Shutter Sound (JP/KR)", isOn: $disableShutterSound)
+                PlainToggle("Dynamic Island UI", minVrs: 19.0, isOn: store.mgKeyBinding([MGKey.island]))
+                PlainToggle("Always On Display (AOD)", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.AOD, MGKey.AOTime]))
+                PlainToggle("Action Button UI in Settings", minVrs: 17.0, isOn: store.mgKeyBinding([MGKey.actButton]))
+                PlainToggle("Camera Control Button UI", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.camButton, MGKey.grapPefr]))
+                PlainToggle("Tap to Wake (SE / Home Button)", isOn: store.mgKeyBinding([MGKey.tapToWake]))
+            } header: {
+                HeaderLabel("SpringBoard Hardware Capabilities", symbol: "sparkles.rectangle.stack")
+            } footer: {
+                Text("Writes to /var/containers/Shared/SystemGroup/systemgroup.com.apple.mobilegestaltcache/Library/Caches/com.apple.MobileGestalt.plist.")
+            }
+            
+            // MARK: - 3. PosterBoard Lock Screen & Wallpaper Container (/var/mobile/Containers/Data/Application)
+            Section {
+                HStack {
+                    Label("PosterBoard Container", systemImage: "photo.on.rectangle.angled")
+                    Spacer()
+                    Text(posterBoardContainer.isEmpty ? "Not Scanned" : "Found")
+                        .font(.caption)
+                        .foregroundStyle(posterBoardContainer.isEmpty ? .secondary : .green)
+                }
+                
+                if !posterBoardContainer.isEmpty {
+                    Button {
+                        backupPosterBoardData()
+                    } label: {
+                        Label("Back Up All Lock Screen Posters", systemImage: "externaldrive.badge.timemachine")
                     }
                     
-                    Picker("Animation Speed", selection: $animSpeed) {
-                        Text("1.0x").tag(1.0)
-                        Text("0.75x").tag(0.75)
-                        Text("0.5x").tag(0.5)
-                        Text("0.25x").tag(0.25)
-                        Text("0.1x").tag(0.1)
-                    }
-                    .pickerStyle(.segmented)
-                }
-                .padding(.vertical, 4)
-            } header: {
-                HeaderLabel("UIKit Animation Speed", symbol: "bolt.horizontal")
-            } footer: {
-                Text("Adjusts UIAnimationDragCoefficient in .GlobalPreferences.plist. Lower values speed up app launches, sheets, and system transitions.")
-            }
-            
-            // MARK: - 2. Status Bar & Time
-            Section {
-                Toggle("Numeric Wi-Fi Signal (dBm)", isOn: $showNumericWiFi)
-                Toggle("Numeric Cellular Signal (dBm)", isOn: $showNumericCellular)
-                Toggle("Hide 'Back to App' Breadcrumb", isOn: $disableBreadcrumb)
-                Toggle("Force Battery Percentage", isOn: $forceBatteryPercent)
-                Toggle("Custom Status Bar Time Override", isOn: $enableCustomTime)
-                if enableCustomTime {
-                    HStack {
-                        Text("Time String")
-                        Spacer()
-                        TextField("9:41", text: $customTimeText)
-                            .multilineTextAlignment(.trailing)
-                    }
-                }
-            } header: {
-                HeaderLabel("Status Bar & Time", symbol: "wifi")
-            } footer: {
-                Text("Configures SBShowRSSI, SBShowGSMRSSI, SBDisableBreadcrumb, SBShowBatteryPercentage, and SBFakeTimeString in com.apple.springboard.plist.")
-            }
-            
-            // MARK: - 3. Lock Screen & SpringBoard Behavior
-            Section {
-                Toggle("Disable Lock Screen Camera Swipe", isOn: $disableLockCamera)
-                Toggle("Disable Lock Screen Today View", isOn: $disableTodayView)
-                Toggle("Keep Screen Awake on Home Screen", isOn: $preventAutoLock)
-                Toggle("Suppress Dock Blur Platter", isOn: $hideDockBackground)
-                Toggle("Enable Internal Prototype Settings", isOn: $enablePrototypeSettings)
-            } header: {
-                HeaderLabel("Lock Screen & SpringBoard", symbol: "lock.iphone")
-            }
-            
-            // MARK: - 4. Control Center Hidden Modules
-            Section {
-                ForEach(ccHiddenModules, id: \.id) { mod in
-                    Toggle(isOn: Binding(
-                        get: { ccEnabledModules.contains(mod.id) },
-                        set: { enabled in
-                            toggleControlCenterModule(mod.id, enabled: enabled)
+                    if hasPosterBackup {
+                        Button {
+                            restorePosterBoardData()
+                        } label: {
+                            Label("Restore Saved Lock Screen Posters", systemImage: "arrow.uturn.backward.circle.fill")
+                                .foregroundStyle(.green)
                         }
-                    )) {
-                        Label(mod.title, systemImage: mod.icon)
+                    }
+                    
+                    Button {
+                        let prefsPath = (posterBoardContainer as NSString).appendingPathComponent("Library/Preferences/com.apple.PosterBoard.plist")
+                        _ = wq_grant((posterBoardContainer as NSString).appendingPathComponent("Library/Preferences"))
+                        inspectPlistURL = URL(fileURLWithPath: prefsPath)
+                        showPlistSheet = true
+                    } label: {
+                        Label("Edit com.apple.PosterBoard.plist", systemImage: "tablecells")
+                    }
+                    
+                    Button {
+                        browseContainerURL = URL(fileURLWithPath: posterBoardContainer)
+                    } label: {
+                        Label("Browse PosterBoard Container", systemImage: "folder")
+                    }
+                } else {
+                    Button {
+                        locatePosterBoard()
+                    } label: {
+                        Label("Locate com.apple.PosterBoard Container", systemImage: "magnifyingglass")
                     }
                 }
-                
-                Button {
-                    _ = wq_grant("/var/mobile/Library/ControlCenter")
-                    inspectPlistURL = URL(fileURLWithPath: ccPlistPath)
-                    showPlistSheet = true
-                } label: {
-                    Label("Open ModuleConfiguration.plist in Editor", systemImage: "tablecells")
-                }
             } header: {
-                HeaderLabel("Control Center Modules", symbol: "switch.2")
+                HeaderLabel("PosterBoard Lock Screen Data", symbol: "wand.and.stars")
             } footer: {
-                Text("Directly adds or removes modules in /var/mobile/Library/ControlCenter/ModuleConfiguration.plist. Respring after toggling.")
+                Text("Accesses com.apple.PosterBoard inside /var/mobile/Containers/Data/Application/* to back up, restore, or edit Lock Screen wallpaper descriptors.")
             }
             
-            // MARK: - 5. Home Screen Icon Layout Backup & Editor
+            // MARK: - 4. SystemGroup Icon Cache & SpringBoard Shared Settings
             Section {
                 Button {
-                    backupIconLayout()
+                    rebuildIconCache()
                 } label: {
-                    Label("Back Up Home Screen Icon Layout", systemImage: "square.and.arrow.down.on.square")
-                }
-                
-                if hasIconBackup {
-                    Button {
-                        restoreIconLayout()
-                    } label: {
-                        Label("Restore Saved Icon Layout", systemImage: "arrow.uturn.backward.circle.fill")
-                            .foregroundStyle(.green)
-                    }
+                    Label("Purge & Rebuild Icon Cache (lsd.iconscache)", systemImage: "square.grid.2x2.fill")
+                        .foregroundStyle(.orange)
                 }
                 
                 Button {
-                    _ = wq_grant("/var/mobile/Library/SpringBoard")
-                    inspectPlistURL = URL(fileURLWithPath: iconStatePath)
-                    showPlistSheet = true
+                    _ = wq_grant(sbSharedSettingsDir)
+                    browseContainerURL = URL(fileURLWithPath: sbSharedSettingsDir)
                 } label: {
-                    Label("Edit IconState.plist (Dock & Folders)", systemImage: "square.grid.3x3.topleft.filled")
+                    Label("Browse SpringBoard.sharedsettings", systemImage: "folder.badge.gearshape")
                 }
                 
                 Button {
-                    _ = wq_grant("/var/mobile/Library/Preferences")
-                    inspectPlistURL = URL(fileURLWithPath: sbPlistPath)
+                    _ = wq_grant(configProfilesDir)
+                    inspectPlistURL = URL(fileURLWithPath: sharedDevConfigPath)
                     showPlistSheet = true
                 } label: {
-                    Label("Edit com.apple.springboard.plist Directly", systemImage: "doc.badge.gearshape")
+                    Label("Edit SharedDeviceConfiguration.plist", systemImage: "doc.text")
                 }
             } header: {
-                HeaderLabel("Home Screen Layout (IconState)", symbol: "apps.iphone")
+                HeaderLabel("SystemGroup Maintenance", symbol: "wrench.and.screwdriver")
             } footer: {
-                Text("Back up your Home Screen icon & folder layout before changing Dynamic Island or Screen Subtype in MobileGestalt so you can restore it in 1 tap.")
+                Text("Purges /var/containers/Shared/SystemGroup/systemgroup.com.apple.lsd.iconscache/Library/Caches so SpringBoard rebuilds app icons on next respring.")
             }
         }
         .navigationTitle("SpringBoard Studio")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    resetToDefaults()
-                } label: {
-                    Label("Reset", systemImage: "gobackward")
-                        .labelStyle(.iconOnly)
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
                 Button("Apply", role: .adaptiveConfirm) {
-                    applyChanges()
+                    applyAll()
                 }
             }
         }
         .onAppear {
-            loadPreferences()
-            loadControlCenterModules()
-            checkIconBackup()
+            loadCurrentSettings()
+            locatePosterBoard()
         }
         .sheet(isPresented: $showPlistSheet) {
             if let url = inspectPlistURL {
                 PlistViewer(url)
             }
         }
+        .background(
+            Group {
+                if let target = browseContainerURL {
+                    NavigationLink(
+                        destination: FileBrowserView(path: target, isContainer: false, shouldGrant: true),
+                        isActive: Binding(
+                            get: { browseContainerURL != nil },
+                            set: { if !$0 { browseContainerURL = nil } }
+                        )
+                    ) {
+                        EmptyView()
+                    }
+                }
+            }
+        )
         .alert("SpringBoard Studio", isPresented: $showStatusAlert) {
             Button("Respring Now") {
                 mgr.shouldRespring = true
@@ -222,211 +207,135 @@ struct SpringBoardTweaksView: View {
         }
     }
     
-    private func speedLabel(_ val: Double) -> String {
-        switch val {
-        case 0.1: return "0.1x Instant"
-        case 0.25: return "0.25x Ultra Fast"
-        case 0.5: return "0.5x Fast"
-        case 0.75: return "0.75x Snappy"
-        default: return "1.0x Normal"
-        }
-    }
+    // MARK: - Logic
     
-    private func loadPreferences() {
-        _ = wq_grant("/var/mobile/Library/Preferences")
-        if let data = wq_read(sbPlistPath, 0, nil),
-           let dict = (try? PropertyListSerialization.propertyList(from: data, options: [], format: nil)) as? [String: Any] {
-            sbDict = dict
-            showNumericWiFi = dict["SBShowRSSI"] as? Bool ?? false
-            showNumericCellular = dict["SBShowGSMRSSI"] as? Bool ?? false
-            disableBreadcrumb = dict["SBDisableBreadcrumb"] as? Bool ?? false
-            forceBatteryPercent = dict["SBShowBatteryPercentage"] as? Bool ?? false
-            enableCustomTime = dict["SBFakeTime"] as? Bool ?? false
-            customTimeText = dict["SBFakeTimeString"] as? String ?? "9:41"
-            
-            disableLockCamera = dict["SBDisableLockScreenCamera"] as? Bool ?? false
-            disableTodayView = dict["SBDisableLockScreenTodayView"] as? Bool ?? false
-            preventAutoLock = dict["SBDontLockEver"] as? Bool ?? false
-            enablePrototypeSettings = dict["SBPrototypeSettingsEnabled"] as? Bool ?? false
-            hideDockBackground = dict["SBHideDockBackground"] as? Bool ?? false
+    private func loadCurrentSettings() {
+        _ = mgLoadData()
+        if let val = store.cacheExtra[shutterClickKey] as? Int, val == 0 {
+            disableShutterSound = true
+        } else {
+            disableShutterSound = false
         }
         
-        if let gData = wq_read(globalPlistPath, 0, nil),
-           let gDict = (try? PropertyListSerialization.propertyList(from: gData, options: [], format: nil)) as? [String: Any] {
-            globalDict = gDict
-            if let num = gDict["UIAnimationDragCoefficient"] as? NSNumber {
-                animSpeed = num.doubleValue
-            } else {
-                animSpeed = 1.0
-            }
+        _ = wq_grant(configProfilesDir)
+        if let data = wq_read(sharedDevConfigPath, 0, nil),
+           let dict = (try? PropertyListSerialization.propertyList(from: data, options: [], format: nil)) as? [String: Any] {
+            lockScreenFootnote = dict["LockScreenFootnote"] as? String ?? ""
+            assetTagText = dict["AssetTagInformation"] as? String ?? ""
         }
     }
     
-    private func loadControlCenterModules() {
-        _ = wq_grant("/var/mobile/Library/ControlCenter")
-        guard let data = wq_read(ccPlistPath, 0, nil),
-              let dict = (try? PropertyListSerialization.propertyList(from: data, options: [], format: nil)) as? [String: Any],
-              let list = dict["module-identifiers"] as? [String] else {
+    private func locatePosterBoard() {
+        // First check if WQEngine already scanned it
+        if let match = WQEngine.shared.apps.first(where: { $0.bundleID == "com.apple.PosterBoard" }) {
+            posterBoardContainer = match.containerPath
+            checkPosterBackup()
             return
         }
-        ccEnabledModules = Set(list)
+        DispatchQueue.global(qos: .userInitiated).async {
+            let found = fsHandlers.getContainerPath(forMatch: "com.apple.PosterBoard")
+            DispatchQueue.main.async {
+                if !found.isEmpty {
+                    self.posterBoardContainer = found
+                    self.checkPosterBackup()
+                }
+            }
+        }
     }
     
-    private func toggleControlCenterModule(_ moduleID: String, enabled: Bool) {
-        _ = wq_grant("/var/mobile/Library/ControlCenter")
-        var dict: [String: Any] = [:]
-        if let data = wq_read(ccPlistPath, 0, nil),
-           let loaded = (try? PropertyListSerialization.propertyList(from: data, options: [], format: nil)) as? [String: Any] {
-            dict = loaded
-        }
-        var modules = (dict["module-identifiers"] as? [String]) ?? []
-        var disabled = (dict["disabled-module-identifiers"] as? [String]) ?? []
-        
-        if enabled {
-            if !modules.contains(moduleID) {
-                modules.append(moduleID)
-            }
-            disabled.removeAll { $0 == moduleID }
-            ccEnabledModules.insert(moduleID)
-        } else {
-            modules.removeAll { $0 == moduleID }
-            ccEnabledModules.remove(moduleID)
-        }
-        
-        dict["module-identifiers"] = modules
-        dict["disabled-module-identifiers"] = disabled
-        
-        if let outData = try? PropertyListSerialization.data(fromPropertyList: dict, format: .binary, options: 0) {
+    private func checkPosterBackup() {
+        let latest = wq_latest_app_backup("com.apple.PosterBoard")
+        hasPosterBackup = (latest != nil)
+    }
+    
+    private func backupPosterBoardData() {
+        guard !posterBoardContainer.isEmpty else { return }
+        DispatchQueue.global(qos: .userInitiated).async {
+            var stampDir: NSString?
             var err: NSString?
-            if wq_write(ccPlistPath, outData, &err) || wq_create_file(ccPlistPath, outData, &err) {
-                Haptic.shared.play(.soft)
+            let ok = wq_backup_app_data(posterBoardContainer, "com.apple.PosterBoard", &stampDir, &err)
+            DispatchQueue.main.async {
+                self.checkPosterBackup()
+                if ok {
+                    Haptic.shared.play(.soft)
+                    Alertinator.shared.alert(title: "PosterBoard Backed Up", body: "Saved Lock Screen posters snapshot to AppBackups/com.apple.PosterBoard/\(stampDir?.lastPathComponent ?? "").")
+                } else {
+                    Alertinator.shared.alert(title: "Backup Failed", body: (err as String?) ?? "Could not back up PosterBoard.")
+                }
             }
         }
     }
     
-    private var iconBackupDir: URL {
-        URL.documentsDirectory.appendingPathComponent("IconLayoutBackup")
-    }
-    
-    private func checkIconBackup() {
-        let saved = iconBackupDir.appendingPathComponent("IconState.plist")
-        hasIconBackup = FileManager.default.fileExists(atPath: saved.path)
-    }
-    
-    private func backupIconLayout() {
-        _ = wq_grant("/var/mobile/Library/SpringBoard")
-        try? FileManager.default.createDirectory(at: iconBackupDir, withIntermediateDirectories: true)
-        var ok = false
-        if let data = wq_read(iconStatePath, 0, nil) {
-            try? data.write(to: iconBackupDir.appendingPathComponent("IconState.plist"))
-            ok = true
-        }
-        if let dData = wq_read(desiredIconStatePath, 0, nil) {
-            try? dData.write(to: iconBackupDir.appendingPathComponent("DesiredIconState.plist"))
-        }
-        checkIconBackup()
-        if ok {
-            Haptic.shared.play(.soft)
-            Alertinator.shared.alert(title: "Icon Layout Backed Up", body: "Saved IconState.plist and DesiredIconState.plist to Documents/IconLayoutBackup.")
-        } else {
-            Alertinator.shared.alert(title: "Backup Failed", body: "Could not read /var/mobile/Library/SpringBoard/IconState.plist.")
-        }
-    }
-    
-    private func restoreIconLayout() {
-        _ = wq_grant("/var/mobile/Library/SpringBoard")
-        var err: NSString?
-        var ok = false
-        let savedIcon = iconBackupDir.appendingPathComponent("IconState.plist")
-        let savedDesired = iconBackupDir.appendingPathComponent("DesiredIconState.plist")
-        
-        if let data = try? Data(contentsOf: savedIcon) {
-            if wq_write(iconStatePath, data, &err) {
-                ok = true
+    private func restorePosterBoardData() {
+        guard !posterBoardContainer.isEmpty, let latest = wq_latest_app_backup("com.apple.PosterBoard") else { return }
+        DispatchQueue.global(qos: .userInitiated).async {
+            var err: NSString?
+            let ok = wq_restore_app_data(latest, posterBoardContainer, &err)
+            DispatchQueue.main.async {
+                if ok {
+                    Haptic.shared.play(.soft)
+                    self.statusMessage = "Restored PosterBoard Lock Screen wallpapers! Respring now to reload Lock Screen."
+                    self.showStatusAlert = true
+                } else {
+                    Alertinator.shared.alert(title: "Restore Failed", body: (err as String?) ?? "Could not restore PosterBoard.")
+                }
             }
         }
-        if let dData = try? Data(contentsOf: savedDesired) {
-            _ = wq_write(desiredIconStatePath, dData, &err)
-        }
-        if ok {
-            Haptic.shared.play(.soft)
-            statusMessage = "Restored Home Screen icon layout! Respring now to apply your saved layout."
-            showStatusAlert = true
-        } else {
-            Alertinator.shared.alert(title: "Restore Failed", body: (err as String?) ?? "Could not write IconState.plist.")
+    }
+    
+    private func rebuildIconCache() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            _ = wq_grant(lsdIconsCacheDir)
+            var freed: UInt64 = 0
+            let _ = wq_purge_contents(lsdIconsCacheDir, &freed)
+            DispatchQueue.main.async {
+                Haptic.shared.play(.heavy)
+                self.statusMessage = "Purged \(wq_size_text(freed)) from systemgroup.com.apple.lsd.iconscache. Respring now to rebuild SpringBoard icons."
+                self.showStatusAlert = true
+            }
         }
     }
     
-    private func applyChanges() {
-        _ = wq_grant("/var/mobile/Library/Preferences")
-        
-        var updatedSB = sbDict
-        updatedSB["SBShowRSSI"] = showNumericWiFi
-        updatedSB["SBShowGSMRSSI"] = showNumericCellular
-        updatedSB["SBDisableBreadcrumb"] = disableBreadcrumb
-        updatedSB["SBShowBatteryPercentage"] = forceBatteryPercent
-        updatedSB["SBFakeTime"] = enableCustomTime
-        if enableCustomTime {
-            updatedSB["SBFakeTimeString"] = customTimeText
-        } else {
-            updatedSB.removeValue(forKey: "SBFakeTimeString")
+    private func applyAll() {
+        // 1. Update SharedDeviceConfiguration.plist in systemgroup.com.apple.configurationprofiles
+        _ = wq_grant(configProfilesDir)
+        var configDict: [String: Any] = [:]
+        if let existing = wq_read(sharedDevConfigPath, 0, nil),
+           let parsed = (try? PropertyListSerialization.propertyList(from: existing, options: [], format: nil)) as? [String: Any] {
+            configDict = parsed
         }
-        
-        updatedSB["SBDisableLockScreenCamera"] = disableLockCamera
-        updatedSB["SBDisableLockScreenTodayView"] = disableTodayView
-        updatedSB["SBDontLockEver"] = preventAutoLock
-        updatedSB["SBPrototypeSettingsEnabled"] = enablePrototypeSettings
-        updatedSB["SBHideDockBackground"] = hideDockBackground
-        
-        var updatedGlobal = globalDict
-        if animSpeed == 1.0 {
-            updatedGlobal.removeValue(forKey: "UIAnimationDragCoefficient")
+        configDict["LockScreenFootnote"] = lockScreenFootnote
+        if assetTagText.isEmpty {
+            configDict.removeValue(forKey: "AssetTagInformation")
         } else {
-            updatedGlobal["UIAnimationDragCoefficient"] = animSpeed
+            configDict["AssetTagInformation"] = assetTagText
         }
-        
-        var sbOk = false
-        var globalOk = false
         var errText: NSString?
-        
-        if let sbData = try? PropertyListSerialization.data(fromPropertyList: updatedSB, format: .binary, options: 0) {
-            if wq_write(sbPlistPath, sbData, &errText) || wq_create_file(sbPlistPath, sbData, &errText) {
-                sbOk = true
+        if let cfgData = try? PropertyListSerialization.data(fromPropertyList: configDict, format: .binary, options: 0) {
+            if !wq_write(sharedDevConfigPath, cfgData, &errText) {
+                _ = wq_create_file(sharedDevConfigPath, cfgData, &errText)
             }
         }
         
-        if let gData = try? PropertyListSerialization.data(fromPropertyList: updatedGlobal, format: .binary, options: 0) {
-            if wq_write(globalPlistPath, gData, &errText) || wq_create_file(globalPlistPath, gData, &errText) {
-                globalOk = true
-            }
-        }
-        
-        if sbOk || globalOk {
-            Haptic.shared.play(.soft)
-            if autoRespring {
-                mgr.shouldRespring = true
-            } else {
-                statusMessage = "Successfully updated SpringBoard, Status Bar & UI preferences. Respring to apply changes."
-                showStatusAlert = true
-            }
+        // 2. Update MobileGestalt in systemgroup.com.apple.mobilegestaltcache
+        if disableShutterSound {
+            store.cacheExtra[shutterClickKey] = 0
+            store.cacheExtra[MGKey.regionCode] = "LL"
+            store.cacheExtra[MGKey.regionSysconfig] = "LL/A"
         } else {
-            Alertinator.shared.alert(title: "Failed to Apply", body: (errText as String?) ?? "Could not write to /var/mobile/Library/Preferences.")
+            store.cacheExtra.removeObject(forKey: shutterClickKey)
         }
-    }
-    
-    private func resetToDefaults() {
-        showNumericWiFi = false
-        showNumericCellular = false
-        disableBreadcrumb = false
-        forceBatteryPercent = false
-        enableCustomTime = false
-        customTimeText = "9:41"
-        disableLockCamera = false
-        disableTodayView = false
-        preventAutoLock = false
-        enablePrototypeSettings = false
-        hideDockBackground = false
-        animSpeed = 1.0
-        applyChanges()
+        store.mgCurrentDict["CacheExtra"] = store.cacheExtra
+        if let mgData = try? PropertyListSerialization.data(fromPropertyList: store.mgCurrentDict, format: .xml, options: 0) {
+            _ = mgWrite(mgData)
+        }
+        
+        Haptic.shared.play(.soft)
+        if autoRespring {
+            mgr.shouldRespring = true
+        } else {
+            statusMessage = "Applied SpringBoard & SystemGroup tweaks successfully! Respring to see changes."
+            showStatusAlert = true
+        }
     }
 }

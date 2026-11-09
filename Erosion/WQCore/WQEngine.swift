@@ -302,7 +302,9 @@ final class WQEngine: ObservableObject {
             var items: [CacheScanItem] = []
             let roots = [
                 "/private/var/mobile/Containers/Data/Application",
-                "/private/var/mobile/Containers/Data/PluginKitPlugin"
+                "/private/var/mobile/Containers/Data/PluginKitPlugin",
+                "/private/var/mobile/Containers/Data/InternalDaemon",
+                "/private/var/mobile/Containers/Shared/AppGroup"
             ]
             
             for root in roots {
@@ -329,16 +331,30 @@ final class WQEngine: ObservableObject {
                 }
             }
             
-            // CrashReporter logs
-            let crashDir = "/private/var/mobile/Library/Logs/CrashReporter"
-            let crashBytes = wq_dir_size(crashDir)
-            if crashBytes > 0 {
+            // SystemGroup Icon & Analytics Caches (MCM-accessible)
+            let lsdCacheDir = "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.lsd.iconscache/Library/Caches"
+            _ = wq_grant(lsdCacheDir)
+            let lsdBytes = wq_dir_size(lsdCacheDir)
+            if lsdBytes > 0 {
                 items.append(CacheScanItem(
-                    name: "iOS Crash Reports",
+                    name: "LaunchServices Icon Cache (SystemGroup)",
                     bundleID: nil,
-                    cacheBytes: crashBytes,
+                    cacheBytes: lsdBytes,
                     tempBytes: 0,
-                    targets: [crashDir]
+                    targets: [lsdCacheDir]
+                ))
+            }
+            
+            let diagDir = "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.osanalyticsdiagnostics"
+            _ = wq_grant(diagDir)
+            let diagBytes = wq_dir_size(diagDir)
+            if diagBytes > 0 {
+                items.append(CacheScanItem(
+                    name: "OSAnalytics Diagnostics (SystemGroup)",
+                    bundleID: nil,
+                    cacheBytes: diagBytes,
+                    tempBytes: 0,
+                    targets: [diagDir]
                 ))
             }
             
@@ -396,11 +412,19 @@ final class WQEngine: ObservableObject {
     
     func cleanCrashLogs(completion: @escaping (UInt64) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
-            let crashDir = "/private/var/mobile/Library/Logs/CrashReporter"
-            var freed: UInt64 = 0
-            _ = wq_purge_contents(crashDir, &freed)
+            var totalFreed: UInt64 = 0
+            let targets = [
+                "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.osanalyticsdiagnostics",
+                "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.lsd.iconscache/Library/Caches"
+            ]
+            for dir in targets {
+                _ = wq_grant(dir)
+                var freed: UInt64 = 0
+                _ = wq_purge_contents(dir, &freed)
+                totalFreed += freed
+            }
             DispatchQueue.main.async {
-                completion(freed)
+                completion(totalFreed)
             }
         }
     }

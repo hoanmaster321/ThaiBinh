@@ -19,11 +19,11 @@ struct OperationsView: View {
     @State private var imprtData = Data()
     
     private let presets: [(String, String, String)] = [
-        ("MobileGestalt Cache", "/var/containers/Shared/SystemGroup/systemgroup.com.apple.mobilegestaltcache/Library/Caches", "com.apple.MobileGestalt.plist"),
-        ("SpringBoard Preferences", "/var/mobile/Library/Preferences", "com.apple.springboard.plist"),
-        ("Global UI Preferences", "/var/mobile/Library/Preferences", ".GlobalPreferences.plist"),
-        ("LockScreen Footnote", "/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles", "SharedDeviceConfiguration.plist"),
-        ("Cloud Supervision Config", "/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles", "CloudConfigurationDetails.plist")
+        ("MobileGestalt Cache (SystemGroup)", "/var/containers/Shared/SystemGroup/systemgroup.com.apple.mobilegestaltcache/Library/Caches", "com.apple.MobileGestalt.plist"),
+        ("LockScreen Footnote (SystemGroup)", "/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles", "SharedDeviceConfiguration.plist"),
+        ("Cloud Supervision Config (SystemGroup)", "/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles", "CloudConfigurationDetails.plist"),
+        ("Effective User Settings (SystemGroup)", "/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/PublicInfo", "PublicEffectiveUserSettings.plist"),
+        ("Find My SearchParty Settings (SystemGroup)", "/var/containers/Shared/SystemGroup/systemgroup.com.apple.icloud.searchpartyd.sharedsettings/Library/Preferences", "com.apple.icloud.searchpartyd.sharedsettings.plist")
     ]
     
     var body: some View {
