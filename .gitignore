@@ -1,0 +1,11 @@
+.DS_Store
+build/
+DerivedData/
+xcuserdata/
+xcshareddata/
+*.ipa
+*.xcuserstate
+.ldid.*
+*.swp
+*~
+*.bak
