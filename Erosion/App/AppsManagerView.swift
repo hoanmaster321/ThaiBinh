@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 enum AppSortMode: String, CaseIterable {
     case size = "Size"
@@ -22,6 +23,9 @@ struct AppsManagerView: View {
     @State private var showConfirmClear = false
     @State private var showConfirmRestore = false
     @State private var showSnapshotsSheet = false
+    @State private var showImportZip = false
+    @State private var prefsPlistURL: URL? = nil
+    @State private var showPrefsPlistSheet = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showAlert = false
@@ -208,12 +212,28 @@ struct AppsManagerView: View {
                     }
                 }
                 
-                Button("Clear App Data", role: .destructive) {
-                    showConfirmClear = true
+                Button("Manage Snapshots (\(app.backupCount))") {
+                    showSnapshotsSheet = true
+                }
+                
+                Button("Import Backup (.zip)") {
+                    showImportZip = true
+                }
+                
+                Button("Edit App Preferences (.plist)") {
+                    openAppPreferences(for: app)
+                }
+                
+                Button("Open App Documents") {
+                    navigateToContainerPath = (app.containerPath as NSString).appendingPathComponent("Documents")
                 }
                 
                 Button("Open Container in File Browser") {
                     navigateToContainerPath = app.containerPath
+                }
+                
+                Button("Clear App Data", role: .destructive) {
+                    showConfirmClear = true
                 }
                 
                 Button("Cancel", role: .cancel) {}
@@ -223,6 +243,27 @@ struct AppsManagerView: View {
             .sheet(isPresented: $showSnapshotsSheet) {
                 if let app = selectedApp {
                     AppBackupSnapshotsSheet(app: app)
+                }
+            }
+            .sheet(isPresented: $showPrefsPlistSheet) {
+                if let plistURL = prefsPlistURL {
+                    PlistViewer(plistURL)
+                }
+            }
+            .fileImporter(isPresented: $showImportZip, allowedContentTypes: [.zip, .archive]) { result in
+                if let app = selectedApp {
+                    switch result {
+                    case .success(let zipURL):
+                        engine.importBackupZip(for: app, from: zipURL) { ok, msg in
+                            alertTitle = ok ? "Backup Imported" : "Import Failed"
+                            alertMessage = msg
+                            showAlert = true
+                        }
+                    case .failure(let err):
+                        alertTitle = "Import Failed"
+                        alertMessage = err.localizedDescription
+                        showAlert = true
+                    }
                 }
             }
             .alert("Clear \(selectedApp?.name ?? "App")?", isPresented: $showConfirmClear) {
@@ -287,6 +328,21 @@ struct AppsManagerView: View {
                 }
             )
         }
+    }
+    
+    private func openAppPreferences(for app: AppInfoItem) {
+        let prefsDir = (app.containerPath as NSString).appendingPathComponent("Library/Preferences")
+        _ = wq_grant(prefsDir)
+        let targetPlist = (prefsDir as NSString).appendingPathComponent("\(app.bundleID).plist")
+        var st = stat()
+        if !wq_stat(targetPlist, &st) {
+            if let emptyData = try? PropertyListSerialization.data(fromPropertyList: [String: Any](), format: .binary, options: 0) {
+                var err: NSString?
+                _ = wq_create_file(targetPlist, emptyData, &err)
+            }
+        }
+        prefsPlistURL = URL(fileURLWithPath: targetPlist)
+        showPrefsPlistSheet = true
     }
 }
 

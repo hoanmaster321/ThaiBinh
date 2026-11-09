@@ -106,32 +106,38 @@ struct ConfigView: View {
     }
     
     private func doSetup() {
-        if !fm.isWritableFile(atPath: CNURL.sharedDevConfig.path) {
-            let res = wq.grantAccess(path: FSURL.configProfiles.path)
-            if !res.0 {
-                Alertinator.shared.alert(title: "Failed to get write access!", body: AppMsg.opFailed)
-                return
-            }
-        }
+        _ = wq_grant(FSURL.configProfiles.path)
         if !fm.fileExists(atPath: CNURL.sharedDevConfig.path) {
             do {
                 let dict = ["LockScreenFootnote" : ""]
                 let data = try PropertyListSerialization.data(fromPropertyList: dict, format: .binary, options: 0)
-                try data.write(to: CNURL.sharedDevConfig)
+                var err: NSString?
+                if !wq_create_file(CNURL.sharedDevConfig.path, data, &err) {
+                    try data.write(to: CNURL.sharedDevConfig)
+                }
             } catch {
                 print("(cn) failed to create footnote file: \(error.localizedDescription)")
-                Alertinator.shared.alert(title: "Failed to create footnote file!", body: AppMsg.opFailed)
             }
         }
         loadData()
     }
     
     private func loadData() {
-        if let ftDict = NSMutableDictionary(contentsOf: CNURL.sharedDevConfig) {
+        if let data = readDataWithWQ(CNURL.sharedDevConfig),
+           let dict = (try? PropertyListSerialization.propertyList(from: data, options: .mutableContainersAndLeaves, format: nil)) as? NSMutableDictionary {
+            ftCurrentDict = dict
+            footnoteText = dict["LockScreenFootnote"] as? String ?? ""
+        } else if let ftDict = NSMutableDictionary(contentsOf: CNURL.sharedDevConfig) {
             ftCurrentDict = ftDict
             footnoteText = ftDict["LockScreenFootnote"] as? String ?? ""
         }
-        if let ccDict = NSMutableDictionary(contentsOf: CNURL.cloudConfig) {
+        
+        if let data = readDataWithWQ(CNURL.cloudConfig),
+           let dict = (try? PropertyListSerialization.propertyList(from: data, options: .mutableContainersAndLeaves, format: nil)) as? NSMutableDictionary {
+            ccCurrentDict = dict
+            supervised = dict["IsSupervised"] as? Bool ?? false
+            orgName = dict["OrganizationName"] as? String ?? ""
+        } else if let ccDict = NSMutableDictionary(contentsOf: CNURL.cloudConfig) {
             ccCurrentDict = ccDict
             supervised = ccDict["IsSupervised"] as? Bool ?? false
             orgName = ccDict["OrganizationName"] as? String ?? ""
@@ -139,20 +145,26 @@ struct ConfigView: View {
     }
     
     private func apply() {
+        _ = wq_grant(FSURL.configProfiles.path)
         let ftDict = ["LockScreenFootnote" : footnoteText]
         ccCurrentDict["IsSupervised"] = supervised
         ccCurrentDict["OrganizationName"] = orgName
         do {
             let ftData = try PropertyListSerialization.data(fromPropertyList: ftDict, format: .binary, options: 0)
-            try ftData.write(to: CNURL.sharedDevConfig)
+            var err: NSString?
+            if !wq_write(CNURL.sharedDevConfig.path, ftData, &err) && !wq_create_file(CNURL.sharedDevConfig.path, ftData, &err) {
+                try ftData.write(to: CNURL.sharedDevConfig)
+            }
             let ccData = try PropertyListSerialization.data(fromPropertyList: ccCurrentDict, format: .binary, options: 0)
-            try ccData.write(to: CNURL.cloudConfig)
+            if !wq_write(CNURL.cloudConfig.path, ccData, &err) && !wq_create_file(CNURL.cloudConfig.path, ccData, &err) {
+                try ccData.write(to: CNURL.cloudConfig)
+            }
             print("(cn) successfully applied config tweaks!")
             Haptic.shared.play(.soft)
             if autoRespring {
                 mgr.shouldRespring = true
             } else {
-                Alertinator.shared.alert(title: "Successfully appiled config tweaks!", body: AppMsg.applied, actionLabel: "Respring", action: { mgr.shouldRespring = true })
+                Alertinator.shared.alert(title: "Successfully applied config tweaks!", body: AppMsg.applied, actionLabel: "Respring", action: { mgr.shouldRespring = true })
             }
         } catch {
             print("(cn) failed to write config files: \(error.localizedDescription)")
@@ -161,12 +173,18 @@ struct ConfigView: View {
     }
     
     private func reset() {
+        _ = wq_grant(FSURL.configProfiles.path)
         ccCurrentDict["IsSupervised"] = false
         ccCurrentDict.removeObject(forKey: "OrganizationName")
         do {
-            try fm.removeItem(at: CNURL.sharedDevConfig)
+            var err: NSString?
+            if !wq_delete(CNURL.sharedDevConfig.path, &err) {
+                try? fm.removeItem(at: CNURL.sharedDevConfig)
+            }
             let ccData = try PropertyListSerialization.data(fromPropertyList: ccCurrentDict, format: .binary, options: 0)
-            try ccData.write(to: CNURL.cloudConfig)
+            if !wq_write(CNURL.cloudConfig.path, ccData, &err) {
+                try ccData.write(to: CNURL.cloudConfig)
+            }
             print("(cn) successfully reset config tweaks!")
             Haptic.shared.play(.soft)
             loadData()

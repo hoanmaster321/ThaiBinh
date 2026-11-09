@@ -46,6 +46,28 @@ struct ContentView: View {
                                 .monospaced()
                                 .lineLimit(1)
                         }
+                        
+                        HStack {
+                            Label("Device Storage:", systemImage: "internaldrive")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(engine.storageSummaryText)
+                                .font(.caption)
+                                .monospacedDigit()
+                                .lineLimit(1)
+                        }
+                        
+                        HStack {
+                            Label("Local Backups:", systemImage: "externaldrive.badge.timemachine")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(engine.totalSafetyBackupsText)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
                     }
                     .padding(.vertical, 4)
                 } header: {

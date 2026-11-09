@@ -13,20 +13,33 @@ struct TweaksView: View {
         NavigationStack {
             List {
                 Section {
-                    NavigationLink("Custom Wallpapers", destination: PosterBoardView())
-                    NavigationLink("Dialer Themer", destination: KeypadView())
+                    NavigationLink(destination: PosterBoardView()) {
+                        Label("Custom Wallpapers (PosterBoard)", systemImage: "photo.on.rectangle.angled")
+                    }
+                    NavigationLink(destination: KeypadView()) {
+                        Label("Dialer Keypad Themer", systemImage: "circle.grid.3x3.fill")
+                    }
+                    NavigationLink(destination: SpringBoardTweaksView()) {
+                        Label("SpringBoard & UI Animation Speed", systemImage: "bolt.horizontal.circle")
+                    }
                 } header: {
-                    HeaderLabel("Theming", symbol: "paintbrush")
+                    HeaderLabel("Theming & UI", symbol: "paintbrush")
                 }
                 
                 Section {
                     if raveSupported() || weOnADebugBuild {
-                        NavigationLink("MobileGestalt", destination: GestaltView())
-                        NavigationLink("Config Tweaks", destination: ConfigView())
+                        NavigationLink(destination: GestaltView()) {
+                            Label("MobileGestalt Hardware Flags", systemImage: "cpu")
+                        }
+                        NavigationLink(destination: ConfigView()) {
+                            Label("Lock Screen Footnote & Supervision", systemImage: "lock.rectangle.on.rectangle")
+                        }
                     }
-                    NavigationLink("File Operations", destination: OperationsView())
+                    NavigationLink(destination: OperationsView()) {
+                        Label("Custom File Overwrite & Presets", systemImage: "wrench.and.screwdriver")
+                    }
                 } header: {
-                    HeaderLabel("System", symbol: "gear")
+                    HeaderLabel("System & Eligibility", symbol: "gear")
                 }
             }
             .navigationTitle("Tweaks")

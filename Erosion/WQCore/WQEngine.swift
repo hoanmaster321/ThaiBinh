@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import ZIPFoundation
 
 struct AppInfoItem: Identifiable, Hashable {
     var id: String { containerPath }
@@ -219,6 +220,73 @@ final class WQEngine: ObservableObject {
             scanApps()
         }
         return ok
+    }
+    
+    func importBackupZip(for app: AppInfoItem, from zipURL: URL, completion: @escaping (Bool, String) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let stopAccess = zipURL.startAccessingSecurityScopedResource()
+            defer {
+                if stopAccess {
+                    zipURL.stopAccessingSecurityScopedResource()
+                }
+            }
+            
+            let fmt = DateFormatter()
+            fmt.locale = Locale(identifier: "en_US_POSIX")
+            fmt.dateFormat = "yyyy-MM-dd HH.mm.ss"
+            let stamp = "Imported-" + fmt.string(from: Date())
+            
+            let rootDir = URL(fileURLWithPath: wq_app_backup_root(app.bundleID))
+            let destDir = rootDir.appendingPathComponent(stamp)
+            let tmpExtract = URL.temporaryDirectory.appendingPathComponent("WQImport-\(UUID().uuidString)")
+            
+            do {
+                try? FileManager.default.removeItem(at: tmpExtract)
+                try FileManager.default.createDirectory(at: tmpExtract, withIntermediateDirectories: true)
+                try FileManager.default.unzipItem(at: zipURL, to: tmpExtract)
+                
+                // Determine if the zip had a top-level wrapper folder or directly contained Documents/Library
+                var sourceRoot = tmpExtract
+                let children = (try? FileManager.default.contentsOfDirectory(at: tmpExtract, includingPropertiesForKeys: nil)) ?? []
+                if children.count == 1,
+                   let first = children.first,
+                   (try? first.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true,
+                   first.lastPathComponent != "Documents" && first.lastPathComponent != "Library" {
+                    sourceRoot = first
+                }
+                
+                try FileManager.default.createDirectory(at: destDir.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try FileManager.default.moveItem(at: sourceRoot, to: destDir)
+                try? FileManager.default.removeItem(at: tmpExtract)
+                
+                DispatchQueue.main.async {
+                    self.scanApps()
+                    completion(true, "Imported backup snapshot: \(stamp)")
+                }
+            } catch {
+                try? FileManager.default.removeItem(at: tmpExtract)
+                DispatchQueue.main.async {
+                    completion(false, "Import failed: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    var storageSummaryText: String {
+        if let attrs = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory()),
+           let free = attrs[.systemFreeSize] as? UInt64,
+           let total = attrs[.systemSize] as? UInt64 {
+            let used = total > free ? (total - free) : 0
+            return "\(wq_size_text(used)) used / \(wq_size_text(free)) free (of \(wq_size_text(total)))"
+        }
+        return "Storage stats unavailable"
+    }
+    
+    var totalSafetyBackupsText: String {
+        let safeBytes = wq_dir_size(wq_backup_root())
+        let docs = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first ?? ""
+        let appBackupsBytes = wq_dir_size((docs as NSString).appendingPathComponent("AppBackups"))
+        return "App Snapshots: \(wq_size_text(appBackupsBytes)) · File Backups: \(wq_size_text(safeBytes))"
     }
     
     // MARK: - Cache Cleaner
