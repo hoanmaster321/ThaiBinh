@@ -3,12 +3,12 @@
   <img src="PreviewIcon.png" alt="ErosionWQ Icon" width="130" style="border-radius: 28px;">
   <br>
   <h1>ErosionWQ (ThaiBinh)</h1>
-  <p><strong>The Ultimate iOS Customization Toolbox, App Data Manager & Cache Cleaner</strong></p>
-  <p>A unified fusion of <a href="https://github.com/jailbreakdotparty/Erosion">Erosion</a> and <a href="https://github.com/kolbicz/WQFiles">WQFiles</a>, powered by the <code>worse_query</code> sandbox escape & <code>fsgetpath</code> inode crawler.</p>
+  <p><strong>The Ultimate iOS Customization Toolbox, Theme Studio, App Data Manager & Cache Cleaner</strong></p>
+  <p>Sự kết hợp toàn diện giữa <a href="https://github.com/jailbreakdotparty/Erosion">Erosion</a> và <a href="https://github.com/kolbicz/WQFiles">WQFiles</a>, vận hành trên kỹ thuật vượt sandbox <code>worse_query</code> & bộ quét inode <code>fsgetpath</code>.</p>
 
   <p>
     <a href="https://github.com/hoanmaster321/ThaiBinh/actions"><img alt="GitHub Actions Build" src="https://github.com/hoanmaster321/ThaiBinh/actions/workflows/build.yml/badge.svg"></a>
-    <img alt="iOS Support" src="https://img.shields.io/badge/iOS-16.0%20--%2027.2-007AFF?style=flat-square&logo=apple">
+    <img alt="iOS Support" src="https://img.shields.io/badge/iOS-17.0%20--%2027.2-007AFF?style=flat-square&logo=apple">
     <img alt="License" src="https://img.shields.io/badge/License-GPL%203.0-green?style=flat-square">
     <img alt="Language" src="https://img.shields.io/badge/Language-Swift%205.10%20%2F%20Obj--C-FA7343?style=flat-square&logo=swift">
     <img alt="Status" src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=flat-square">
@@ -17,141 +17,138 @@
 
 ---
 
-## 🌟 Overview / Giới thiệu tổng quan
+## 🌟 Tổng quan / Overview
 
-**ErosionWQ** kết hợp sức mạnh tùy biến hệ thống của **Erosion** (jailbreakdotparty) cùng với trình quản lý ứng dụng, dọn dẹp bộ nhớ đệm và duyệt file siêu tốc của **WQFiles** (kolbicz). Ứng dụng hoạt động hoàn toàn trên thiết bị (on-device), **không cần jailbreak** và **không cần kernel exploit**, tận dụng kỹ thuật vượt sandbox `worse_query`.
-
-### 🚀 Key Features / Tính năng nổi bật
-
-1. **Dashboard & Thiết bị (Home)**:
-   - Hiển thị tên thương mại thiết bị và build kernel iOS (ví dụ: `iPhone 16 Pro Max · iOS 27.0.1 (24A446)`).
-   - Kiểm tra trạng thái App Group (`group.cz.kolbi.wqfiles` / `group.party.jailbreak.erosion`).
-   - Respring nhanh qua SpringBoard WebView renderer.
-   - Terminal logs trực tiếp (`wq_log` và console output).
-
-2. **Trung tâm Tinh chỉnh (Tweaks - Erosion Engine)**:
-   - **MobileGestalt**: Kích hoạt Dynamic Island (hỗ trợ chỉnh Subtype), giới hạn sạc 80% (Charge Limit), Always On Display, bộ nhớ trong (Internal Storage), tắt âm chụp ảnh, spoof model iPhone (thử nghiệm Apple Intelligence).
-   - **PosterBoard Wallpapers**: Tùy biến hình nền Nugget-style, đặt lại collections.
-   - **Keypad Themer**: Đổi giao diện bàn phím quay số cuộc gọi phong cách Cowabunga.
-   - **Supervision & Profiles**: Quản lý trạng thái giám sát thiết bị và cấu hình MDM.
-   - **Tự động sao lưu an toàn**: Mọi chỉnh sửa plist hệ thống đều được tự động backup trước khi ghi đè.
-
-3. **Quản lý Dữ liệu Ứng dụng (App Manager - WQFiles Engine)**:
-   - Quét siêu tốc tất cả ứng dụng cài đặt nhờ cơ chế duyệt inode `fsgetpath` và cơ sở dữ liệu `LaunchServices` từ container `lsd`.
-   - Hiển thị tên app tiếng Việt/bản địa hóa và icon chất lượng cao thay vì mã UUID vô nghĩa.
-   - Tính toán dung lượng thực tế (`Documents`, `Library`, `tmp`).
-   - **Quản lý Đa Snapshot (Multi-Snapshot Backup Manager)**: Tạo nhiều bản sao lưu theo mốc thời gian (`AppBackups/<bundleID>/<timestamp>`), xem dung lượng từng bản, chọn khôi phục bất kỳ snapshot nào, chia sẻ ZIP hoặc vuốt để xóa bản cũ.
-   - **Bộ lọc & Sắp xếp linh hoạt**: Sắp xếp danh sách ứng dụng theo dung lượng (*Size*), tên (*Name*) hoặc trạng thái đã sao lưu (*Backed Up*).
-   - **Chia sẻ file ZIP (AirDrop / Files / Mail)**: Nén backup trực tiếp qua `NSFileCoordinator` và mở Share Sheet.
-   - **Xóa sạch dữ liệu (Clear Data)**: Reset ứng dụng về trạng thái mới cài đặt (hỗ trợ tự động sao lưu trước khi xóa).
-
-4. **Dọn dẹp Bộ nhớ đệm (Cache & Junk Cleaner - WQFiles Engine)**:
-   - Quét sạch `Library/Caches` và thư mục `tmp` trên toàn bộ ứng dụng và extension.
-   - Quét và dọn dẹp báo cáo lỗi iOS Crash Reports (`/var/mobile/Library/Logs/CrashReporter`).
-   - Bộ lọc thông minh: *Select All*, *Large Caches (>50 MB)*, *None*, và tìm kiếm theo tên app.
-   - Nút dọn dẹp trực tiếp kèm thanh đo tiến trình và báo cáo số MB/GB giải phóng.
-
-5. **Trình duyệt File chuyên sâu (Advanced File Browser)**:
-   - Phím tắt truy cập nhanh: Data Containers (kèm icon app), App Groups, Extension Data, Internal Daemons, System Data, System Groups (MobileGestalt, Profiles), Safety Backups.
-   - Nhập đường dẫn bất kỳ (Go to Path).
-   - Tốc độ mở container tăng gấp 30 lần (chỉ ~1s thay vì chờ 30 giây như trước).
-   - **Trình xem & chỉnh sửa đa năng**:
-     - *Plist Viewer & Raw XML Editor*: Duyệt cây Key-Value hoặc chuyển sang chế độ sửa mã XML trực tiếp (tự động chuyển đổi Binary Plist `bplist00` sang XML để sửa và đóng gói lại đúng định dạng gốc khi lưu).
-     - *Text Editor*: Sửa file văn bản và lưu trực tiếp an toàn qua `wq_write`.
-     - *Hex Viewer*: Soi mã hex từng byte với offset và ASCII representation.
-     - *QuickLook*: Xem trước ảnh, âm thanh, video, file nén.
-   - **Khôi phục 1 chạm (1-Tap File Restore)**: Tự động sao lưu file vào `Documents/Backups` trước khi ghi đè hoặc xóa, kèm nút **"Restore to Original Path"** ngay trong menu ngữ cảnh để hoàn tác về đúng đường dẫn hệ thống gốc.
-   - **Hỗ trợ SystemGroup iOS 27.0.1+**: Tự động dò tìm các container hệ thống (`mobilegestaltcache`, `configurationprofiles`, `searchpartyd`, `lsd.iconscache`,...) ngay cả khi thư mục cha `/var/containers/Shared/SystemGroup` chặn liệt kê.
+**ErosionWQ (ThaiBinh)** hợp nhất toàn bộ bộ công cụ tinh chỉnh hệ thống của **Erosion** (`jailbreakdotparty`) và trình quản lý dữ liệu ứng dụng, dọn dẹp bộ nhớ đệm, duyệt file siêu tốc của **WQFiles** (`kolbicz`) vào một ứng dụng duy nhất. Ứng dụng hoạt động trực tiếp trên thiết bị (**on-device**), **không cần jailbreak** và **không cần kernel exploit**, sử dụng kỹ thuật `worse_query` (phiên bản kế nhiệm trực tiếp của `bad_query`).
 
 ---
 
-## 📱 Supported Versions / Phiên bản hỗ trợ
+## 🔓 Phạm vi quyền truy cập MCM của `worse_query`
 
-- **iOS / iPadOS 17.0 – 27.2** (Hỗ trợ đầy đủ tất cả tính năng bao gồm MobileGestalt).
-- **iOS / iPadOS 16.0 – 16.7.x** (Hỗ trợ dọn dẹp cache, duyệt file và một số tweak; tính năng MobileGestalt có thể bị giới hạn do cơ chế sandbox trên iOS 16).
+Kỹ thuật `worse_query` yêu cầu ứng dụng được ký kèm quyền **App Group** để xin sandbox token từ `containermanagerd`. Toàn bộ các tính năng trong **ErosionWQ** được thiết kế chuẩn xác để đọc/ghi vào **6 nhánh MCM Container** mà `worse_query` hỗ trợ trên iOS 17.0 – 27.2:
+
+1. `/var/containers/Data/System` *(iOS 27)*
+2. `/var/containers/Shared/SystemGroup/*` *(iOS 27 — MobileGestalt, ConfigurationProfiles, lsd.iconscache, SpringBoard.sharedsettings, searchpartyd...)*
+3. `/var/mobile/Containers/Data/Application/*` *(PosterBoard, MobilePhone, Passbook/Wallet, MobileSafari và toàn bộ ứng dụng cài đặt)*
+4. `/var/mobile/Containers/Data/InternalDaemon/*` *(Các tiến trình hệ thống nội bộ)*
+5. `/var/mobile/Containers/Data/PluginKitPlugin/*` *(Widgets, WallpaperKit Extensions, ControlKit Extensions)*
+6. `/var/mobile/Containers/Shared/AppGroup/*` *(Dữ liệu dùng chung giữa App & Extension)*
 
 ---
 
-## 🛠 Building & Installation / Hướng dẫn Build
+## 🚀 Các tính năng chính (5 Tabs & Studios)
 
-### Yêu cầu:
-- macOS với Xcode 15 trở lên (hoặc macOS Command Line Tools với `clang`/`swiftc`).
-- Có cài đặt `ldid` hoặc chứng chỉ codesign.
+### 1. 🏠 Dashboard & Chẩn đoán Thiết bị (Home)
+- Hiển thị tên thương mại thiết bị, mã máy và bản dựng kernel iOS (ví dụ: `iPhone 16 Pro Max (iPhone17,2) · iOS 27.0.1 (24A446)`).
+- Kiểm tra trạng thái **App Group** đang hoạt động (`wq_app_group`).
+- Thống kê trực tiếp dung lượng bộ nhớ máy (Đang dùng / Còn trống) và tổng dung lượng các bản sao lưu an toàn.
+- **Respring 1 chạm** qua SpringBoard WebView renderer.
+- **Live Console Logs**: Truyền tải trực tiếp toàn bộ log hệ thống và log thao tác `wq_log` (`[wq] ...`) theo thời gian thực.
 
-### Cách 1: Build bằng script tự động
+### 2. 🎨 Trung tâm Tinh chỉnh & Theme Studio (Tweaks)
+- **Theme & Visual Mods Studio (`ThemeStudioView`)**:
+  - **Wallet / Passbook Card Skins**: Tự động quét container `com.apple.Passbook` và cho phép thay ảnh nền thẻ `.pkpass` (`cardBackgroundCombined@2x.png`, `background@2x.png`, `strip@2x.png`) bằng bất kỳ ảnh nào từ Thư viện ảnh (tự động backup ảnh gốc).
+  - **PosterBoard Wallpaper Descriptors**: Liệt kê các bộ cung cấp hình nền trong `PRBPosterExtensionDataStore` (`CollectionsPoster`, `MercuryPoster`, `PhotosPosterProvider`, `WeatherPoster`, `EmojiPoster`...) để chỉnh sửa sâu.
+  - **Safari & SystemGroup Icon Cache**: Chỉnh sửa nhanh `com.apple.mobilesafari.plist` và quản lý/xóa bộ nhớ đệm icon `systemgroup.com.apple.lsd.iconscache`.
+- **Dialer Keypad Studio (`KeypadView`)**:
+  - Tùy biến bàn phím quay số trong container `com.apple.mobilephone` (`TelephonyUI-10` / `TelephonyUI-9` / `TelephonyUI-8`).
+  - **6 Bộ Theme Bàn phím tạo sẵn 1 chạm (Built-in Themes)**: *Neon Cyber*, *Matrix Hex (`0x01`..`0x09`)*, *Gold Royal*, *Roman Numerals (`I`..`IX`)*, *Pastel Glass*, *Minimal Ring*, hoặc tự chọn ảnh / nhập gói theme `.zip`.
+- **Custom Wallpapers (`PosterBoardView`)**:
+  - Nhập và áp dụng các gói hình nền động `.tendies` vào `com.apple.PosterBoard`.
+- **SpringBoard, PosterBoard & SystemGroup Studio (`SpringBoardTweaksView`)**:
+  - Tùy chỉnh chữ dưới đáy màn hình khóa (**Lock Screen Footnote**) và thông tin thiết bị (**Asset Tag**) trong `SharedDeviceConfiguration.plist`.
+  - Tắt âm chụp ảnh Camera (`RegionalBehaviorShutterClick` = `0`) cho máy Nhật/Hàn.
+  - **1-Tap Back Up & Restore Lock Screen Posters**: Sao lưu và khôi phục toàn bộ cấu hình màn hình khóa của `com.apple.PosterBoard`.
+  - **Purge & Rebuild Icon Cache**: Xóa sạch cache trong `systemgroup.com.apple.lsd.iconscache` để làm mới biểu tượng ứng dụng.
+- **MobileGestalt Hardware Flags (`GestaltView`)**:
+  - Bật **Dynamic Island** (kèm chỉnh Subtype), **Always On Display (AOD)**, **Giới hạn sạc 80% (Charge Limit)**, **Boot Chime**, **Stage Manager & iPadOS UI**, **Action Button UI**, **Camera Control UI**, **Tap to Wake**, **Spoof Model (Apple Intelligence)**.
+- **Custom File Overwrite & Presets (`OperationsView`)**:
+  - Tích hợp danh sách Preset các đường dẫn `SystemGroup` quan trọng để ghi đè/xuất file nhanh chóng kèm cơ chế tự động sao lưu.
+
+### 3. 📦 Quản lý Dữ liệu Ứng dụng (App Manager)
+- Quét siêu tốc toàn bộ ứng dụng trong `/var/mobile/Containers/Data/Application` bằng `fsgetpath` và giải mã tên + biểu tượng thực tế từ cơ sở dữ liệu `LaunchServices` (`lsd`).
+- **Multi-Snapshot Backup Manager**: Tạo nhiều bản sao lưu theo mốc thời gian (`Documents/AppBackups/<bundleID>/<timestamp>`), xem dung lượng từng bản, chọn khôi phục bất kỳ mốc thời gian nào hoặc xóa bản cũ.
+- **Import & Share Backup (`.zip`)**: Xuất bản sao lưu ra file `.zip` qua AirDrop/Files hoặc **Nhập file `.zip` sao lưu từ ngoài vào** để khôi phục dữ liệu giữa các thiết bị.
+- **1-Tap Edit App Preferences (`.plist`)**: Mở thẳng file `<Container>/Library/Preferences/<bundleID>.plist` (`UserDefaults`) vào trình sửa Plist chỉ với 1 chạm.
+- **Clear App Data**: Đặt lại ứng dụng về trạng thái mới cài đặt (có tùy chọn tự động sao lưu trước khi xóa).
+
+### 4. 🧹 Dọn dẹp Bộ nhớ đệm (Cache Cleaner)
+- Quét sạch `Library/Caches` và `tmp` trên cả 4 nhánh MCM (`Application`, `PluginKitPlugin`, `InternalDaemon`, `AppGroup`) cùng với `lsd.iconscache` và `osanalyticsdiagnostics` trong `SystemGroup`.
+- Bộ lọc chọn nhanh: *Select All*, *Large (>50 MB)*, *None*, kèm thanh tìm kiếm và báo cáo chính xác dung lượng giải phóng.
+
+### 5. 📁 Trình duyệt File chuyên sâu (File Browser)
+- Bookmark truy cập nhanh tất cả các nhánh MCM Container, kèm hiển thị icon & tên ứng dụng trực tiếp trên từng thư mục UUID.
+- Tự động dò tìm các container hệ thống trong `/var/containers/Shared/SystemGroup` trên iOS 27.0.1+ (`wq_known_system_groups`).
+- **Bộ công cụ xem & sửa file mạnh mẽ**:
+  - **Plist Viewer & Raw XML Editor**: Sửa dạng cây Key-Value hoặc chuyển sang sửa mã XML trực tiếp (tự động giải mã Binary Plist `bplist00` sang XML và đóng gói lại đúng định dạng gốc khi lưu).
+  - **Text Editor & Hex Viewer**: Xem/sửa văn bản và soi mã Hex từng byte.
+  - **Đổi tênFile/Thư mục nâng cao (`wq_rename`)**: Hỗ trợ đổi tên trực tiếp hoặc tự động fallback copy+unlink an toàn trong môi trường sandbox.
+  - **1-Tap File Restore**: Tự động sao lưu mọi file bị ghi đè/xóa vào `Documents/Backups`, kèm nút **"Restore to Original Path"** ngay trong menu nhấn giữ để hoàn tác về đúng vị trí gốc.
+
+---
+
+## 🛠 Hướng dẫn Build & Cài đặt
+
+### Tự động qua GitHub Actions (Khuyên dùng)
+Mỗi lần push code lên nhánh `main`, workflow [`.github/workflows/build.yml`](.github/workflows/build.yml) sẽ tự động biên dịch bằng Xcode trên `macos-latest`, ký giả bằng `ldid` kèm `Erosion.entitlements` và xuất bản file **`ErosionWQ.ipa`** trong mục **Actions -> Artifacts**.
+
+### Build thủ công trên macOS
 ```bash
 git clone https://github.com/hoanmaster321/ThaiBinh.git
 cd ThaiBinh
 chmod +x build.sh ipabuild.sh
 
-# Build file IPA hoàn chỉnh
-./build.sh
+# Build ra gói ứng dụng và đóng gói IPA
+./ipabuild.sh
 ```
 
-### Cách 2: Mở bằng Xcode
-1. Mở `Erosion.xcodeproj` trong Xcode.
-2. Chọn target `Erosion` và thiết bị đích `Any iOS Device (arm64)`.
-3. Nhấn **Product** -> **Archive** hoặc chạy script `./ipabuild.sh`.
+### Lưu ý khi Sideload
+Hãy đảm bảo công cụ sideload của bạn (**SideStore**, **AltStore**, **Sideloadly**, **Feather**, **TrollStore** hoặc chứng chỉ Apple Developer) **giữ nguyên quyền App Group (`com.apple.security.application-groups`)** để `worse_query` có thể kích hoạt.
 
 ---
 
-## 📲 Sideloading & App Group Note / Hướng dẫn cài đặt
-
-Kỹ thuật `worse_query` yêu cầu ứng dụng phải giữ quyền **App Group**. Khi sideload bằng các công cụ bên dưới, hãy đảm bảo giữ nguyên entitlement App Group:
-
-- **TrollStore**: Khuyên dùng (nếu thiết bị hỗ trợ). Cài trực tiếp file `.ipa`, toàn quyền truy cập.
-- **AltStore / SideStore**: Bật tùy chọn giữ App Groups.
-- **Sideloadly**: Bật *App Groups Support* trong cài đặt nâng cao.
-- **Feather / Scarlet**: Sideload bình thường bằng chứng chỉ nhà phát triển (Development / Distribution certificate).
-
----
-
-## 📂 Project Structure / Cấu trúc thư mục
+## 📂 Cấu trúc Mã nguồn
 
 ```
-ErosionWQ/
-├── build.sh                      # Script build tự động dòng lệnh
-├── ipabuild.sh                   # Script đóng gói IPA với xcodebuild & ldid
-├── PreviewIcon.png               # Icon ứng dụng
-├── icons/                        # Bộ biểu tượng app các kích cỡ
-├── Erosion.xcodeproj/            # Xcode Project cấu hình iOS 17.0+
+ThaiBinh/
+├── .github/workflows/build.yml   # CI/CD tự động build IPA trên GitHub Actions
+├── build.sh / ipabuild.sh        # Script build dòng lệnh & đóng gói IPA
+├── Erosion.xcodeproj/            # Xcode Project (Deployment Target: iOS 17.0+)
 └── Erosion/
-    ├── bridge.h                  # Header cầu nối Swift <-> C/Obj-C
-    ├── ErosionApp.swift          # Điểm khởi chạy app với 5 Tabs
-    ├── ContentView.swift         # Tab 1: Dashboard & Live Terminal
-    ├── Erosion.entitlements      # Entitlements hỗ trợ các App Group
-    ├── Info.plist                # Khai báo quyền, document viewer
+    ├── bridge.h                  # Cầu nối Objective-C / C sang Swift
+    ├── ErosionApp.swift          # Giao diện chính 5 Tabs
+    ├── ContentView.swift         # Tab 1: Home Dashboard, Storage & Live Console
+    ├── Erosion.entitlements      # Khai báo quyền App Group
     ├── App/
-    │   ├── AppsManagerView.swift # Tab 3: Trình quản lý App & Backup
-    │   ├── CacheCleanerView.swift# Tab 4: Dọn dẹp cache & crash logs
-    │   ├── ButtonStyles.swift    # Giao diện nút bấm
-    │   ├── LogView.swift         # Terminal console platter
-    │   └── SettingsView.swift    # Cài đặt ứng dụng
-    ├── Tweaks/                   # Tab 2: Tinh chỉnh hệ thống
-    │   ├── MobileGestalt/        # Dynamic Island, 80% charge, internal storage
-    │   ├── PosterBoard/          # Custom wallpapers
-    │   ├── Keypads/              # Giao diện bàn phím cuộc gọi
-    │   └── Other/                # Supervision & Operations
-    ├── FileManager/              # Tab 5: Trình duyệt file
-    │   ├── FMRootView.swift      # Màn hình bookmark các container
-    │   ├── Browser/              # FileBrowserView, FileRow, FolderRow
-    │   ├── Helpers/              # FileHelpers, InfoHelpers
-    │   └── Viewers/              # PlistViewer, TextViewer, HexViewer
-    └── WQCore/                   # Nhân xử lý WQFiles & Inode engine
-        ├── WQAccess.h            # C APIs cho worse_query, fsgetpath, lsd
-        ├── WQAccess.m            # Core filesystem driver & backup engine
-        └── WQEngine.swift        # Swift service kết nối UI và WQAccess
+    │   ├── AppsManagerView.swift # Tab 3: App Manager, Multi-Snapshot, ZIP Import & Prefs Editor
+    │   ├── CacheCleanerView.swift# Tab 4: MCM Cache & Diagnostics Cleaner
+    │   ├── LogView.swift         # Màn hình Terminal thời gian thực
+    │   └── SettingsView.swift    # Cài đặt chung
+    ├── Tweaks/                   # Tab 2: Trung tâm Tinh chỉnh & Theme
+    │   ├── TweaksView.swift      # Menu điều hướng Tweaks
+    │   ├── ThemeStudio/          # Mod Skin thẻ Wallet, PosterBoard Descriptors, Safari & Icon Cache
+    │   ├── SpringBoard/          # Lock Screen Footnote/AssetTag, Shutter Mute, Poster Backup
+    │   ├── Keypads/              # Dialer Keypad Themer + 6 Built-in Procedural Themes
+    │   ├── MobileGestalt/        # Dynamic Island, AOD, Charge Limit, Stage Manager, Spoofing
+    │   ├── PosterBoard/          # Trình cài đặt hình nền .tendies
+    │   └── Other/                # Supervision, LockScreen Config & Preset File Operations
+    ├── FileManager/              # Tab 5: Trình duyệt File MCM
+    │   ├── FMRootView.swift      # Bookmark các nhánh MCM Container & Safety Backups
+    │   ├── Browser/              # FileBrowserView, FileRow (1-Tap Restore), FolderRow
+    │   ├── Helpers/              # FileHelpers & FileItemHelpers tích hợp sâu WQAccess
+    │   └── Viewers/              # PlistViewer (Tree + XML), TextViewer (Binary Plist), HexViewer
+    └── WQCore/                   # Nhân xử lý WQFiles & worse_query
+        ├── WQAccess.h            # Header C/Obj-C APIs
+        ├── WQAccess.m            # Engine worse_query, fsgetpath, lsd parser, auto-backup & rename
+        └── WQEngine.swift        # ObservableObject quản lý trạng thái toàn cục
 ```
 
 ---
 
-## 🛡 License & Credits
+## 🛡 Bản quyền & Ghi nhận (Credits)
 
-Dự án phát hành theo giấy phép **GNU General Public License v3.0 (GPL-3.0)**.
-
-- **[lunginspector](https://github.com/lunginspector)**: Tác giả chính của dự án Erosion.
-- **[kolbicz](https://github.com/kolbicz)**: Tác giả của WQFiles (App data manager, cache cleaner, LaunchServices integration).
-- **[forcequit (Taj C)](https://github.com/forcequitOS)** & **[0xjohnny](https://github.com/0xjohnnydev)**: Khám phá và xây dựng kỹ thuật sandbox escape `worse_query` / `bad_query`.
+Phát hành theo giấy phép **GNU General Public License v3.0 (GPL-3.0)**.
+- **[jailbreakdotparty / lunginspector](https://github.com/jailbreakdotparty/Erosion)**: Dự án gốc Erosion.
+- **[kolbicz](https://github.com/kolbicz/WQFiles)**: Dự án gốc WQFiles.
+- **[forcequit (Taj C)](https://github.com/forcequitOS/worse_query)** & **[0xjohnny](https://github.com/0xjohnnydev)**: Kỹ thuật vượt sandbox `worse_query` / `bad_query`.
 - **[murk-sus](https://github.com/murk-sus)**: Kỹ thuật quét inode `fsgetpath` (KAMUI).
-- **[Skadz](https://github.com/skadz108)** & **[rooootdev](https://github.com/rooootdev)**: Triển khai exploit và các tiện ích backend Erosion.
-- **[neonmodder123](https://github.com/neonmodder123)**: Kỹ thuật respring qua WebView.

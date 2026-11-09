@@ -97,6 +97,20 @@ struct FolderRow: View {
                 }
                 
                 Button {
+                    Alertinator.shared.prompt(title: "Rename Folder", placeholder: file.name) { result in
+                        if let name = result, !name.isEmpty {
+                            if renameFile(file.fileURL, to: name) {
+                                mgr.refreshFiles.toggle()
+                            } else {
+                                Alertinator.shared.alert(title: "Failed to rename folder!", body: Errors.checkLogs)
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Rename", systemImage: "pencil")
+                }
+                
+                Button {
                     let res = zipFile(file.fileURL)
                     if res {
                         mgr.refreshFiles.toggle()
@@ -129,7 +143,14 @@ struct FolderRow: View {
                 Divider()
                 
                 Button(role: .destructive) {
-                    try? fm.removeItem(at: file.fileURL)
+                    var err: NSString?
+                    if !wq_delete(file.fileURL.path, &err) {
+                        var freed: UInt64 = 0
+                        _ = wq_purge_contents(file.fileURL.path, &freed)
+                        if !wq_delete(file.fileURL.path, &err) {
+                            try? fm.removeItem(at: file.fileURL)
+                        }
+                    }
                     mgr.refreshFiles.toggle()
                 } label: {
                     Label("Delete", systemImage: "trash")

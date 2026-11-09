@@ -427,21 +427,40 @@ BOOL wq_delete(NSString *path, NSString **errorText)
 
 BOOL wq_rename(NSString *path, NSString *newName, NSString **errorText)
 {
-    if (newName.length == 0 || [newName containsString:@"/"]) {
+    NSString *trimmed = [newName stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    if (trimmed.length == 0 || [trimmed containsString:@"/"]) {
         if (errorText) *errorText = @"Invalid name";
         return NO;
     }
-    NSString *dest = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:newName];
-    struct stat st;
-    if (lstat(dest.fileSystemRepresentation, &st) == 0) {
+    NSString *parent = path.stringByDeletingLastPathComponent;
+    NSString *dest = [parent stringByAppendingPathComponent:trimmed];
+    if ([dest isEqualToString:path]) return YES;
+
+    wq_grant(parent);
+    struct stat dstSt;
+    if (lstat(dest.fileSystemRepresentation, &dstSt) == 0) {
         if (errorText) *errorText = @"An item with that name already exists";
         return NO;
     }
     int rc = rename(path.fileSystemRepresentation, dest.fileSystemRepresentation);
-    if (rc != 0 && wq_is_denied(errno) && wq_grant(path.stringByDeletingLastPathComponent))
+    if (rc != 0 && wq_is_denied(errno)) {
+        wq_grant(path);
         rc = rename(path.fileSystemRepresentation, dest.fileSystemRepresentation);
+    }
+    // Fallback for sandboxed regular files where rename(2) is blocked but create+unlink is allowed
+    if (rc != 0) {
+        struct stat srcSt;
+        if (wq_stat(path, &srcSt) && S_ISREG(srcSt.st_mode)) {
+            NSString *rwErr = nil;
+            NSData *data = wq_read(path, 0, &rwErr);
+            if (data && wq_create_file(dest, data, &rwErr) && wq_delete(path, &rwErr)) {
+                wq_log(@"rename (copy+unlink): %@ -> %@: OK", path, trimmed);
+                return YES;
+            }
+        }
+    }
     int err = errno;
-    wq_log(@"rename: %@ -> %@: %@", path, newName, rc == 0 ? @"OK" : wq_errno(err));
+    wq_log(@"rename: %@ -> %@: %@", path, trimmed, rc == 0 ? @"OK" : wq_errno(err));
     if (rc != 0 && errorText) *errorText = wq_errno(err);
     return rc == 0;
 }
