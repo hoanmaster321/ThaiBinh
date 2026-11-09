@@ -12,7 +12,6 @@ struct HexViewer: View {
     @State private var hexContent: String = "Loading..."
     @State private var isLoading = true
     @State private var fileSizeStr: String = ""
-    @State private var showShare = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -55,14 +54,11 @@ struct HexViewer: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    showShare = true
+                    presentShareSheet(with: url)
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
             }
-        }
-        .sheet(isPresented: $showShare) {
-            ShareSheet(items: [url])
         }
         .onAppear {
             loadHex()
@@ -76,7 +72,7 @@ struct HexViewer: View {
             
             DispatchQueue.main.async {
                 if let d = data {
-                    self.fileSizeStr = "\(wq_size_text(UInt64(d.length))) · read up to 128 KB"
+                    self.fileSizeStr = "\(wq_size_text(UInt64(d.count))) · read up to 128 KB"
                     self.hexContent = wq_hex_dump(d)
                 } else {
                     self.hexContent = "Failed to read file: \((err as String?) ?? "Access Denied")"

@@ -238,7 +238,7 @@ final class WQEngine: ObservableObject {
                             name: name,
                             bundleID: bundleID,
                             cacheBytes: cacheBytes,
-                            tempBytes: tempBytes,
+                            tempBytes: tmpBytes,
                             targets: [cachesPath, tmpPath]
                         )
                         items.append(item)

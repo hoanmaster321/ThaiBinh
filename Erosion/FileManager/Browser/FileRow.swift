@@ -262,7 +262,7 @@ struct FileRow: View {
                         mgr.refreshFiles.toggle()
                     } catch {
                         print("(fm) failed to delete file: \(error.localizedDescription)")
-                        Alertinator.shared.alert(title: "Failed to delete file!", body: (error as String?) ?? Errors.checkLogs)
+                        Alertinator.shared.alert(title: "Failed to delete file!", body: error.localizedDescription)
                     }
                 }
             } label: {

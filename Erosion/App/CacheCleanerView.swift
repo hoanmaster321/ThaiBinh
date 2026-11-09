@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct CacheCleanerView: View {
     @StateObject private var engine = WQEngine.shared

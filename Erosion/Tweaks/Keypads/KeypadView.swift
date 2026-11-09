@@ -125,7 +125,6 @@ struct KeypadView: View {
                         .labelStyle(.iconOnly)
                 }
             }
-            ToolbarSpacer(placement: .topBarTrailing)
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Import") {
                     showFileImporter = true
@@ -165,7 +164,7 @@ struct KeypadView: View {
                         .background {
                             Circle()
                                 .fill(Color.clear)
-                                .glassEffect(.clear, in: .circle)
+                                .keypadGlass()
                                 .frame(width: 78, height: 78)
                         }
                 } else {
@@ -174,7 +173,7 @@ struct KeypadView: View {
                         .frame(width: 78, height: 78)
                         .foregroundStyle(Color(.label))
                         .fontWeight(.medium)
-                        .glassEffect(.clear.interactive(), in: .circle)
+                        .keypadGlass(interactive: true)
                 }
             }
             .frame(width: 80, height: 80)
@@ -234,6 +233,17 @@ struct KeypadButtonStyle: ButtonStyle {
             .frame(width: 75, height: 75)
             .foregroundStyle(Color(.label))
             .fontWeight(.medium)
-            .glassEffect(.clear.tint(isConfirm ? Color.accentColor : Color.clear).interactive(), in: .circle)
+            .keypadGlass(isConfirm: isConfirm, interactive: true)
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func keypadGlass(isConfirm: Bool = false, interactive: Bool = false) -> some View {
+        if #available(iOS 26.0, *) {
+            self.glassEffect(.clear.tint(isConfirm ? Color.accentColor : Color.clear).interactive(), in: .circle)
+        } else {
+            self.background(isConfirm ? Color.accentColor.opacity(0.35) : Color(UIColor.systemGray5), in: Circle())
+        }
     }
 }
