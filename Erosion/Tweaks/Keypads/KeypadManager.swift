@@ -107,9 +107,30 @@ final class KeypadManager: ObservableObject {
         }
     }
     
+    func getTelephonyUIDir() -> URL {
+        let base = URL(fileURLWithPath: mpContainerPath())
+        let caches = base.appendingPathComponent("Library/Caches")
+        _ = wq_grant(caches.path)
+        for sub in ["TelephonyUI-10", "TelephonyUI-9", "TelephonyUI-8"] {
+            let candidate = caches.appendingPathComponent(sub)
+            var st = stat()
+            if wq_stat(candidate.path, &st) {
+                _ = wq_grant(candidate.path)
+                return candidate
+            }
+        }
+        return caches.appendingPathComponent("TelephonyUI-10")
+    }
+    
     // fun...
     func getFileRegCode() -> String {
-        let tpURL = URL(fileURLWithPath: mpContainerPath()).appendingPathComponent("Library/Caches/TelephonyUI-10")
+        let tpURL = getTelephonyUIDir()
+        if let names = wq_list(tpURL.path, nil), let first = names.first {
+            let split = first.split(separator: "-")
+            if let reg = split.first {
+                return String(reg)
+            }
+        }
         if let tpURLs = try? fm.contentsOfDirectory(at: tpURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles) {
             if let split = tpURLs.first?.lastPathComponent.split(separator: "-") {
                 return split.map { String($0) }[0]
@@ -128,11 +149,18 @@ final class KeypadManager: ObservableObject {
     }
     
     func applyKeypadItems() -> Bool {
+        let tpDir = getTelephonyUIDir()
+        _ = wq_grant(tpDir.path)
         var failed = 0
         for item in mpKeypad {
+            guard !item.imgData.isEmpty else { continue }
             let files = item.kpID.fileNames
             for fileName in files {
-                let finalURL = URL(fileURLWithPath: mpContainerPath()).appendingPathComponent("Library/Caches/TelephonyUI-10").appendingPathComponent(fileName)
+                let finalURL = tpDir.appendingPathComponent(fileName)
+                var err: NSString?
+                if wq_write(finalURL.path, item.imgData, &err) || wq_create_file(finalURL.path, item.imgData, &err) {
+                    continue
+                }
                 do {
                     try item.imgData.write(to: finalURL)
                 } catch {
@@ -148,8 +176,14 @@ final class KeypadManager: ObservableObject {
     }
     
     func resetKeypadItems() -> Bool {
+        let filesURL = getTelephonyUIDir()
+        _ = wq_grant(filesURL.path)
+        var freed: UInt64 = 0
+        if wq_purge_contents(filesURL.path, &freed) {
+            clearKeypads()
+            return true
+        }
         do {
-            let filesURL = URL(fileURLWithPath: mpContainerPath()).appendingPathComponent("Library/Caches/TelephonyUI-10")
             let files = try fm.contentsOfDirectory(at: filesURL, includingPropertiesForKeys: [])
             for fileURL in files {
                 try fm.removeItem(at: fileURL)
@@ -304,6 +338,171 @@ final class KeypadManager: ObservableObject {
             print("(kp) failed to import theme: \(error.localizedDescription)")
         }
         return false
+    }
+    
+    // MARK: - Built-in Procedural Keypad Themes
+    func applyPresetTheme(_ preset: KeypadPresetTheme) {
+        let size = CGSize(width: 225, height: 225)
+        for kpID in KeypadID.allCases {
+            let img = preset.renderKey(for: kpID, size: size)
+            if let data = img.pngData() {
+                updateKeypadItem(forID: kpID, withData: data, ogData: data)
+            }
+        }
+    }
+}
+
+enum KeypadPresetTheme: String, CaseIterable {
+    case neonCyber = "Neon Cyber"
+    case matrixHacker = "Matrix Hex"
+    case goldLuxury = "Gold Royal"
+    case romanNumerals = "Roman Numerals"
+    case pastelCandy = "Pastel Glass"
+    case ghostMinimal = "Minimal Ring"
+    
+    var icon: String {
+        switch self {
+        case .neonCyber: return "bolt.circle.fill"
+        case .matrixHacker: return "terminal.fill"
+        case .goldLuxury: return "crown.fill"
+        case .romanNumerals: return "building.columns.fill"
+        case .pastelCandy: return "paintpalette.fill"
+        case .ghostMinimal: return "circle.dotted"
+        }
+    }
+    
+    func labelForKey(_ id: KeypadID) -> (main: String, sub: String) {
+        switch self {
+        case .romanNumerals:
+            switch id {
+            case .one: return ("I", "")
+            case .two: return ("II", "ABC")
+            case .three: return ("III", "DEF")
+            case .four: return ("IV", "GHI")
+            case .five: return ("V", "JKL")
+            case .six: return ("VI", "MNO")
+            case .seven: return ("VII", "PQRS")
+            case .eight: return ("VIII", "TUV")
+            case .nine: return ("IX", "WXYZ")
+            case .star: return ("✱", "")
+            case .zero: return ("O", "+")
+            case .pound: return ("#", "")
+            }
+        case .matrixHacker:
+            switch id {
+            case .one: return ("0x01", "BIN")
+            case .two: return ("0x02", "ABC")
+            case .three: return ("0x03", "DEF")
+            case .four: return ("0x04", "GHI")
+            case .five: return ("0x05", "JKL")
+            case .six: return ("0x06", "MNO")
+            case .seven: return ("0x07", "PQRS")
+            case .eight: return ("0x08", "TUV")
+            case .nine: return ("0x09", "WXYZ")
+            case .star: return ("0x2A", "PTR")
+            case .zero: return ("0x00", "NUL")
+            case .pound: return ("0x23", "ROOT")
+            }
+        default:
+            switch id {
+            case .one: return ("1", "")
+            case .two: return ("2", "A B C")
+            case .three: return ("3", "D E F")
+            case .four: return ("4", "G H I")
+            case .five: return ("5", "J K L")
+            case .six: return ("6", "M N O")
+            case .seven: return ("7", "P Q R S")
+            case .eight: return ("8", "T U V")
+            case .nine: return ("9", "W X Y Z")
+            case .star: return ("∗", "")
+            case .zero: return ("0", "+")
+            case .pound: return ("#", "")
+            }
+        }
+    }
+    
+    func renderKey(for id: KeypadID, size: CGSize) -> UIImage {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1.0
+        format.opaque = false
+        
+        return UIGraphicsImageRenderer(size: size, format: format).image { context in
+            let ctx = context.cgContext
+            let rect = CGRect(origin: .zero, size: size).insetBy(dx: 8, dy: 8)
+            
+            let bgColor: UIColor
+            let borderColor: UIColor
+            let textColor: UIColor
+            let borderWidth: CGFloat
+            
+            switch self {
+            case .neonCyber:
+                bgColor = UIColor(red: 0.05, green: 0.06, blue: 0.16, alpha: 0.88)
+                borderColor = UIColor(red: 0.0, green: 0.95, blue: 1.0, alpha: 0.95)
+                textColor = UIColor(red: 0.0, green: 0.98, blue: 1.0, alpha: 1.0)
+                borderWidth = 5
+            case .matrixHacker:
+                bgColor = UIColor(red: 0.02, green: 0.10, blue: 0.04, alpha: 0.90)
+                borderColor = UIColor(red: 0.1, green: 0.95, blue: 0.3, alpha: 0.85)
+                textColor = UIColor(red: 0.2, green: 1.0, blue: 0.4, alpha: 1.0)
+                borderWidth = 4
+            case .goldLuxury:
+                bgColor = UIColor(red: 0.10, green: 0.09, blue: 0.07, alpha: 0.92)
+                borderColor = UIColor(red: 0.95, green: 0.78, blue: 0.32, alpha: 0.95)
+                textColor = UIColor(red: 0.98, green: 0.84, blue: 0.42, alpha: 1.0)
+                borderWidth = 5
+            case .romanNumerals:
+                bgColor = UIColor(red: 0.14, green: 0.14, blue: 0.18, alpha: 0.85)
+                borderColor = UIColor(white: 0.85, alpha: 0.6)
+                textColor = UIColor.white
+                borderWidth = 3
+            case .pastelCandy:
+                bgColor = UIColor(red: 0.95, green: 0.45, blue: 0.75, alpha: 0.32)
+                borderColor = UIColor(red: 1.0, green: 0.65, blue: 0.88, alpha: 0.9)
+                textColor = UIColor.white
+                borderWidth = 4
+            case .ghostMinimal:
+                bgColor = UIColor.clear
+                borderColor = UIColor(white: 1.0, alpha: 0.55)
+                textColor = UIColor.white
+                borderWidth = 3
+            }
+            
+            ctx.setFillColor(bgColor.cgColor)
+            ctx.fillEllipse(in: rect)
+            
+            ctx.setStrokeColor(borderColor.cgColor)
+            ctx.setLineWidth(borderWidth)
+            ctx.strokeEllipse(in: rect)
+            
+            let labels = labelForKey(id)
+            let mainFontSize: CGFloat = (self == .matrixHacker) ? 48 : (self == .romanNumerals ? 56 : 78)
+            let mainFont: UIFont = (self == .matrixHacker)
+                ? UIFont.monospacedSystemFont(ofSize: mainFontSize, weight: .bold)
+                : UIFont.systemFont(ofSize: mainFontSize, weight: .semibold)
+            
+            let pStyle = NSMutableParagraphStyle()
+            pStyle.alignment = .center
+            
+            let mainAttrs: [NSAttributedString.Key: Any] = [
+                .font: mainFont,
+                .foregroundColor: textColor,
+                .paragraphStyle: pStyle
+            ]
+            let mainSize = (labels.main as NSString).size(withAttributes: mainAttrs)
+            let mainY = labels.sub.isEmpty ? (size.height - mainSize.height) / 2.0 : (size.height * 0.44 - mainSize.height / 2.0)
+            (labels.main as NSString).draw(in: CGRect(x: 0, y: mainY, width: size.width, height: mainSize.height), withAttributes: mainAttrs)
+            
+            if !labels.sub.isEmpty {
+                let subAttrs: [NSAttributedString.Key: Any] = [
+                    .font: UIFont.systemFont(ofSize: 22, weight: .bold),
+                    .foregroundColor: textColor.withAlphaComponent(0.78),
+                    .paragraphStyle: pStyle
+                ]
+                let subSize = (labels.sub as NSString).size(withAttributes: subAttrs)
+                (labels.sub as NSString).draw(in: CGRect(x: 0, y: size.height * 0.68, width: size.width, height: subSize.height), withAttributes: subAttrs)
+            }
+        }
     }
 }
 

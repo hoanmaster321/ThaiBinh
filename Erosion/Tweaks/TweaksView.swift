@@ -13,11 +13,14 @@ struct TweaksView: View {
         NavigationStack {
             List {
                 Section {
+                    NavigationLink(destination: ThemeStudioView()) {
+                        Label("Theme & Visual Mods Studio", systemImage: "paintpalette.fill")
+                    }
                     NavigationLink(destination: PosterBoardView()) {
                         Label("Custom Wallpapers (PosterBoard)", systemImage: "photo.on.rectangle.angled")
                     }
                     NavigationLink(destination: KeypadView()) {
-                        Label("Dialer Keypad Themer", systemImage: "circle.grid.3x3.fill")
+                        Label("Dialer Keypad Themer (6 Built-in Themes)", systemImage: "circle.grid.3x3.fill")
                     }
                     NavigationLink(destination: SpringBoardTweaksView()) {
                         Label("SpringBoard, PosterBoard & SystemGroup", systemImage: "sparkles.rectangle.stack")

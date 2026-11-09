@@ -83,6 +83,21 @@ struct KeypadView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    Menu {
+                        ForEach(KeypadPresetTheme.allCases, id: \.self) { preset in
+                            Button {
+                                kpMgr.applyPresetTheme(preset)
+                                Haptic.shared.play(.soft)
+                            } label: {
+                                Label(preset.rawValue, systemImage: preset.icon)
+                            }
+                        }
+                    } label: {
+                        Label("Built-in Themes", systemImage: "paintpalette.fill")
+                    }
+                    
+                    Divider()
+                    
                     Button {
                         kpMgr.maskKeysIntoCircle(size: size, custW: custW, custH: custH)
                     } label: {
