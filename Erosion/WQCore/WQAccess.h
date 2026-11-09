@@ -92,6 +92,11 @@ dispatch_queue_t wq_io_queue(void);
 // App Backups helpers
 NSString *wq_app_backup_root(NSString *bundleID);
 NSString *_Nullable wq_latest_app_backup(NSString *bundleID);
+NSArray<NSString *> *wq_all_app_backups(NSString *bundleID);
+BOOL wq_delete_app_backup(NSString *stampDir);
+
+// Known SystemGroup paths fallback for iOS 27.0.1+
+NSArray<NSString *> *wq_known_system_groups(void);
 
 // Zip and share folder via native Share Sheet
 void wq_share_folder(UIViewController *host, NSString *dir, NSString *zipName, UIView *_Nullable source);

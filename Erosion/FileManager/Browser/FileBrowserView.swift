@@ -126,13 +126,18 @@ struct FileBrowserView: View {
                                 Alertinator.shared.prompt(title: "What would you like to call your new file? Make sure you attach an extension at the end.", placeholder: "new.txt", completion: { name in
                                     let name = name ?? ""
                                     if !name.isEmpty {
-                                        do {
-                                            let fileURL = path.appendingPathComponent(name)
-                                            try Data().write(to: fileURL)
+                                        let fileURL = path.appendingPathComponent(name)
+                                        var err: NSString?
+                                        if wq_create_file(fileURL.path, Data(), &err) {
                                             mgr.refreshFiles.toggle()
-                                        } catch {
-                                            print("(fm) failed to create file: \(error.localizedDescription)")
-                                            Alertinator.shared.alert(title: "Failed to create file!", body: Errors.checkLogs)
+                                        } else {
+                                            do {
+                                                try Data().write(to: fileURL)
+                                                mgr.refreshFiles.toggle()
+                                            } catch {
+                                                print("(fm) failed to create file: \(error.localizedDescription)")
+                                                Alertinator.shared.alert(title: "Failed to create file!", body: (err as String?) ?? error.localizedDescription)
+                                            }
                                         }
                                     }
                                 })
@@ -147,11 +152,16 @@ struct FileBrowserView: View {
                                         do {
                                             let fileURL = path.appendingPathComponent(name + ".plist")
                                             let data = try PropertyListSerialization.data(fromPropertyList: NSMutableDictionary(), format: .xml, options: 0)
-                                            try data.write(to: fileURL)
-                                            mgr.refreshFiles.toggle()
+                                            var err: NSString?
+                                            if wq_create_file(fileURL.path, data, &err) {
+                                                mgr.refreshFiles.toggle()
+                                            } else {
+                                                try data.write(to: fileURL)
+                                                mgr.refreshFiles.toggle()
+                                            }
                                         } catch {
                                             print("(fm) failed to create plist: \(error.localizedDescription)")
-                                            Alertinator.shared.alert(title: "Failed to create property list!", body: Errors.checkLogs)
+                                            Alertinator.shared.alert(title: "Failed to create property list!", body: error.localizedDescription)
                                         }
                                     }
                                 })
@@ -163,12 +173,18 @@ struct FileBrowserView: View {
                                 Alertinator.shared.prompt(title: "What would you like to call your new folder?", placeholder: "Folder Name", completion: { name in
                                     let name = name ?? ""
                                     if !name.isEmpty {
-                                        do {
-                                            try fm.createDirectoryIfNeeded(at: path.appendingPathComponent(name))
+                                        let folderURL = path.appendingPathComponent(name)
+                                        var err: NSString?
+                                        if wq_create_dir(folderURL.path, &err) {
                                             mgr.refreshFiles.toggle()
-                                        } catch {
-                                            print("(fm) failed to create folder: \(error.localizedDescription)")
-                                            Alertinator.shared.alert(title: "Failed to create folder!", body: Errors.checkLogs)
+                                        } else {
+                                            do {
+                                                try fm.createDirectoryIfNeeded(at: folderURL)
+                                                mgr.refreshFiles.toggle()
+                                            } catch {
+                                                print("(fm) failed to create folder: \(error.localizedDescription)")
+                                                Alertinator.shared.alert(title: "Failed to create folder!", body: (err as String?) ?? error.localizedDescription)
+                                            }
                                         }
                                     }
                                 })
@@ -317,15 +333,30 @@ struct FileBrowserView: View {
                     unsortedFiles.append(getFileItem(at: fileURL, isContainer: isContainer))
                 }
             } else if isContainer || path.path.contains("/Containers/") || path.path.contains("/SystemGroup") {
+                var discoveredSet = Set<String>()
+                var orderedPaths: [String] = []
                 if let directPaths = wq_enumerate(path.path, 400000, nil), !directPaths.isEmpty {
-                    for p in directPaths {
-                        unsortedFiles.append(getFileItem(at: URL(fileURLWithPath: p), isContainer: true))
+                    for p in directPaths where !discoveredSet.contains(p) {
+                        discoveredSet.insert(p)
+                        orderedPaths.append(p)
                     }
                 } else {
                     let paths = fsHandlers.getDirPaths(path.path, maxInode: 400000)
-                    for p in paths where !p.isEmpty {
-                        unsortedFiles.append(getFileItem(at: URL(fileURLWithPath: p), isContainer: true))
+                    for p in paths where !p.isEmpty && !discoveredSet.contains(p) {
+                        discoveredSet.insert(p)
+                        orderedPaths.append(p)
                     }
+                }
+                if path.path.hasSuffix("/SystemGroup") {
+                    for kp in wq_known_system_groups() {
+                        if !discoveredSet.contains(kp) {
+                            discoveredSet.insert(kp)
+                            orderedPaths.append(kp)
+                        }
+                    }
+                }
+                for p in orderedPaths {
+                    unsortedFiles.append(getFileItem(at: URL(fileURLWithPath: p), isContainer: true))
                 }
             } else if let pathFiles = try? fm.contentsOfDirectory(at: path, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey, .contentModificationDateKey]) {
                 unsortedFiles = pathFiles.map { fileURL in
@@ -381,12 +412,15 @@ struct FileBrowserView: View {
                     }
                 }
                 let data = try Data(contentsOf: fileURL)
-                
                 let newURL = path.appendingPathComponent(fileURL.lastPathComponent)
-                try? fm.removeItem(at: newURL)
-                
-                try data.write(to: newURL)
-                mgr.refreshFiles.toggle()
+                var err: NSString?
+                if wq_create_file(newURL.path, data, &err) {
+                    mgr.refreshFiles.toggle()
+                } else {
+                    try? fm.removeItem(at: newURL)
+                    try data.write(to: newURL)
+                    mgr.refreshFiles.toggle()
+                }
             } catch {
                 print("(fm) failed to import file: \(error.localizedDescription)")
                 Alertinator.shared.alert(title: "Failed to import file!", body: "\(error.localizedDescription)")

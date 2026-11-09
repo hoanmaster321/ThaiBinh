@@ -17,6 +17,11 @@ struct AppInfoItem: Identifiable, Hashable {
     let formattedBytes: String
     let hasBackup: Bool
     let latestBackupPath: String?
+    let allBackupPaths: [String]
+    
+    var backupCount: Int {
+        return allBackupPaths.count
+    }
     
     var icon: UIImage? {
         return wq_app_icon(bundleID)
@@ -130,6 +135,7 @@ final class WQEngine: ObservableObject {
                 
                 totalBytes += appSize
                 let latestBackup = wq_latest_app_backup(bundleID)
+                let allBackups = wq_all_app_backups(bundleID)
                 
                 discovered.append(AppInfoItem(
                     containerPath: container,
@@ -138,7 +144,8 @@ final class WQEngine: ObservableObject {
                     bytes: appSize,
                     formattedBytes: wq_size_text(appSize),
                     hasBackup: latestBackup != nil,
-                    latestBackupPath: latestBackup
+                    latestBackupPath: latestBackup,
+                    allBackupPaths: allBackups
                 ))
             }
             
@@ -200,10 +207,18 @@ final class WQEngine: ObservableObject {
         }
     }
     
-    func shareBackup(_ app: AppInfoItem, from viewController: UIViewController, sourceView: UIView?) {
-        guard let latest = app.latestBackupPath else { return }
-        let zipTitle = "\(app.name) \(URL(fileURLWithPath: latest).lastPathComponent)"
-        wq_share_folder(viewController, latest, zipTitle, sourceView)
+    func shareBackup(_ app: AppInfoItem, backupPath: String? = nil, from viewController: UIViewController, sourceView: UIView?) {
+        guard let target = backupPath ?? app.latestBackupPath else { return }
+        let zipTitle = "\(app.name) \(URL(fileURLWithPath: target).lastPathComponent)"
+        wq_share_folder(viewController, target, zipTitle, sourceView)
+    }
+    
+    func deleteBackupSnapshot(_ snapshotPath: String) -> Bool {
+        let ok = wq_delete_app_backup(snapshotPath)
+        if ok {
+            scanApps()
+        }
+        return ok
     }
     
     // MARK: - Cache Cleaner

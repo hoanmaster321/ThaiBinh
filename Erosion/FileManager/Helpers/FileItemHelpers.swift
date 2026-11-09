@@ -55,7 +55,7 @@ func getFileItem(at url: URL, isContainer: Bool = false) -> FileItem {
         if let symlink = values.isSymbolicLink, let directory = values.isDirectory {
             item.type = symlink ? .symlink : directory ? .folder : .file
         }
-        item.uttype = values.contentType ?? .data
+        item.uttype = values.contentType ?? (UTType(filenameExtension: url.pathExtension) ?? .data)
         item.size = values.fileSize ?? 0
         if let date = values.creationDate {
             item.creationDate = date
@@ -69,7 +69,29 @@ func getFileItem(at url: URL, isContainer: Bool = false) -> FileItem {
         } else {
             item.modifiedDateStr = ""
         }
-        item.hidden = values.isHidden ?? false
+        item.hidden = values.isHidden ?? url.lastPathComponent.hasPrefix(".")
+    } else {
+        var st = stat()
+        if wq_stat(url.path, &st) {
+            let mode = st.st_mode & S_IFMT
+            if mode == S_IFLNK {
+                item.type = .symlink
+                if let path = try? fm.destinationOfSymbolicLink(atPath: url.path) {
+                    item.destURL = URL(fileURLWithPath: path)
+                }
+            } else if mode == S_IFDIR {
+                item.type = .folder
+            } else {
+                item.type = .file
+            }
+            item.uttype = UTType(filenameExtension: url.pathExtension) ?? .data
+            item.size = Int(st.st_size)
+            let mdate = Date(timeIntervalSince1970: TimeInterval(st.st_mtimespec.tv_sec))
+            item.modifiedDate = mdate
+            item.modifiedDateStr = formatter.string(from: mdate)
+            item.hidden = url.lastPathComponent.hasPrefix(".")
+            item.posixPerms = String(format: "%04o", Int(st.st_mode & 0o7777))
+        }
     }
     if let attrs = try? fm.attributesOfItem(atPath: url.path) {
         if let perms = attrs[.posixPermissions] as? NSNumber {
@@ -82,8 +104,8 @@ func getFileItem(at url: URL, isContainer: Bool = false) -> FileItem {
             item.group = group
         }
     }
-    item.readable = fm.isReadableFile(atPath: url.path)
-    item.writable = fm.isWritableFile(atPath: url.path)
+    item.readable = fm.isReadableFile(atPath: url.path) || (wq_app_group() != nil)
+    item.writable = fm.isWritableFile(atPath: url.path) || (wq_app_group() != nil && (url.path.hasPrefix("/var/") || url.path.hasPrefix("/private/var/")))
     item.executable = fm.isExecutableFile(atPath: url.path)
     
     return item

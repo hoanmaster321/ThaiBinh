@@ -40,10 +40,10 @@
    - Quét siêu tốc tất cả ứng dụng cài đặt nhờ cơ chế duyệt inode `fsgetpath` và cơ sở dữ liệu `LaunchServices` từ container `lsd`.
    - Hiển thị tên app tiếng Việt/bản địa hóa và icon chất lượng cao thay vì mã UUID vô nghĩa.
    - Tính toán dung lượng thực tế (`Documents`, `Library`, `tmp`).
-   - **Sao lưu 1 chạm (Back Up)**: Snapshot toàn bộ dữ liệu app vào `AppBackups/<bundleID>/<timestamp>`.
-   - **Phục hồi (Restore)**: Khôi phục dữ liệu snapshot trở lại ứng dụng bất kỳ lúc nào.
+   - **Quản lý Đa Snapshot (Multi-Snapshot Backup Manager)**: Tạo nhiều bản sao lưu theo mốc thời gian (`AppBackups/<bundleID>/<timestamp>`), xem dung lượng từng bản, chọn khôi phục bất kỳ snapshot nào, chia sẻ ZIP hoặc vuốt để xóa bản cũ.
+   - **Bộ lọc & Sắp xếp linh hoạt**: Sắp xếp danh sách ứng dụng theo dung lượng (*Size*), tên (*Name*) hoặc trạng thái đã sao lưu (*Backed Up*).
    - **Chia sẻ file ZIP (AirDrop / Files / Mail)**: Nén backup trực tiếp qua `NSFileCoordinator` và mở Share Sheet.
-   - **Xóa sạch dữ liệu (Clear Data)**: Reset ứng dụng về trạng thái mới cài đặt.
+   - **Xóa sạch dữ liệu (Clear Data)**: Reset ứng dụng về trạng thái mới cài đặt (hỗ trợ tự động sao lưu trước khi xóa).
 
 4. **Dọn dẹp Bộ nhớ đệm (Cache & Junk Cleaner - WQFiles Engine)**:
    - Quét sạch `Library/Caches` và thư mục `tmp` trên toàn bộ ứng dụng và extension.
@@ -56,11 +56,12 @@
    - Nhập đường dẫn bất kỳ (Go to Path).
    - Tốc độ mở container tăng gấp 30 lần (chỉ ~1s thay vì chờ 30 giây như trước).
    - **Trình xem & chỉnh sửa đa năng**:
-     - *Plist Viewer & Editor*: Duyệt cây Key-Value, chỉnh sửa giá trị trực tiếp.
-     - *Text Editor*: Sửa file văn bản và lưu trực tiếp an toàn.
+     - *Plist Viewer & Raw XML Editor*: Duyệt cây Key-Value hoặc chuyển sang chế độ sửa mã XML trực tiếp (tự động chuyển đổi Binary Plist `bplist00` sang XML để sửa và đóng gói lại đúng định dạng gốc khi lưu).
+     - *Text Editor*: Sửa file văn bản và lưu trực tiếp an toàn qua `wq_write`.
      - *Hex Viewer*: Soi mã hex từng byte với offset và ASCII representation.
      - *QuickLook*: Xem trước ảnh, âm thanh, video, file nén.
-   - Tự động sao lưu file vào `Documents/Backups` trước khi sửa hoặc xóa để khôi phục khi cần.
+   - **Khôi phục 1 chạm (1-Tap File Restore)**: Tự động sao lưu file vào `Documents/Backups` trước khi ghi đè hoặc xóa, kèm nút **"Restore to Original Path"** ngay trong menu ngữ cảnh để hoàn tác về đúng đường dẫn hệ thống gốc.
+   - **Hỗ trợ SystemGroup iOS 27.0.1+**: Tự động dò tìm các container hệ thống (`mobilegestaltcache`, `configurationprofiles`, `searchpartyd`, `lsd.iconscache`,...) ngay cả khi thư mục cha `/var/containers/Shared/SystemGroup` chặn liệt kê.
 
 ---
 
@@ -79,8 +80,8 @@
 
 ### Cách 1: Build bằng script tự động
 ```bash
-git clone https://github.com/hoanmaster321/ErosionWQ.git
-cd ErosionWQ
+git clone https://github.com/hoanmaster321/ThaiBinh.git
+cd ThaiBinh
 chmod +x build.sh ipabuild.sh
 
 # Build file IPA hoàn chỉnh

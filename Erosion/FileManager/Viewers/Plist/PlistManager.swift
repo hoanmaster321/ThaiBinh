@@ -14,18 +14,20 @@ final class PlistManager: ObservableObject {
     @Published var plistArray: [PlistItem] = []
     @Published var url: URL = URL.documentsDirectory.appendingPathComponent("oops")
     @Published var isWritable = false
+    @Published var plistFormat: PropertyListSerialization.PropertyListFormat = .binary
     
     init() {}
     
     func loadPlistItems() -> Bool {
         plistArray = [PlistItem(key: "Root", value: [], isExpanded: true)]
-        if let rawDict = getFileDict(url) {
+        if let (rawDict, fmt) = getFileDictWithFormat(url) {
+            self.plistFormat = fmt
             for key in rawDict.keys {
                 if let value = rawDict[key] {
                     plistArray[0].dictVal.append(PlistItem(key: key, value: value))
                 }
             }
-            plistArray = plistArray.sorted(by: { $0.key < $1.key })
+            plistArray[0].dictVal.sort(by: { $0.key < $1.key })
             return true
         } else {
             print("(fm) failed to load plist as it seems like there was no passable dictionary?")
@@ -55,7 +57,8 @@ final class PlistManager: ObservableObject {
         }
     
         do {
-            let data = try PropertyListSerialization.data(fromPropertyList: dictToWrite, format: .binary, options: 0)
+            let outFmt: PropertyListSerialization.PropertyListFormat = (plistFormat == .xml) ? .xml : .binary
+            let data = try PropertyListSerialization.data(fromPropertyList: dictToWrite, format: outFmt, options: 0)
             var wqErr: NSString?
             if wq_write(url.path, data, &wqErr) {
                 return true

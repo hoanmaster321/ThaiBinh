@@ -14,6 +14,7 @@ struct PlistViewer: View {
     
     @State private var file = clearFileItem
     @State private var showErrorView = false
+    @State private var showRawXMLEditor = false
     
     init(_ fileURL: URL) {
         self.fileURL = fileURL
@@ -52,13 +53,22 @@ struct PlistViewer: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        if let url = makeTemp(file.fileURL) {
-                            presentShareSheet(with: url)
+                    HStack(spacing: 14) {
+                        Button {
+                            if let url = makeTemp(file.fileURL) {
+                                presentShareSheet(with: url)
+                            }
+                        } label: {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                                .labelStyle(.iconOnly)
                         }
-                    } label: {
-                        Label("Share", systemImage: "square.and.arrow.up")
-                            .labelStyle(.iconOnly)
+                        
+                        Button {
+                            showRawXMLEditor = true
+                        } label: {
+                            Label("XML Editor", systemImage: "chevron.left.forwardslash.chevron.right")
+                                .labelStyle(.iconOnly)
+                        }
                     }
                 }
                 
@@ -69,6 +79,11 @@ struct PlistViewer: View {
                         ToolbarLabel("Close", symbol: "xmark")
                     }
                 }
+            }
+            .sheet(isPresented: $showRawXMLEditor, onDismiss: {
+                _ = pmgr.loadPlistItems()
+            }) {
+                TextViewer(fileURL)
             }
         }
         .onAppear {

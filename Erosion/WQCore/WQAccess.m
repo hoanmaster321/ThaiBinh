@@ -37,6 +37,8 @@ void wq_log(NSString *format, ...)
     NSString *line = [[NSString alloc] initWithFormat:format arguments:args];
     va_end(args);
     NSLog(@"[wqfiles] %@", line);
+    printf("[wq] %s\n", line.UTF8String);
+    fflush(stdout);
     [gLogLock lock];
     [gLog appendFormat:@"%@\n", line];
     [gLogLock unlock];
@@ -1063,6 +1065,50 @@ NSString *_Nullable wq_latest_app_backup(NSString *bundleID)
     NSArray *stamps = [[NSFileManager.defaultManager contentsOfDirectoryAtPath:wq_app_backup_root(bundleID) error:nil]
                        sortedArrayUsingSelector:@selector(compare:)];
     return stamps.lastObject ? [wq_app_backup_root(bundleID) stringByAppendingPathComponent:stamps.lastObject] : nil;
+}
+
+NSArray<NSString *> *wq_all_app_backups(NSString *bundleID)
+{
+    NSString *root = wq_app_backup_root(bundleID);
+    NSArray *stamps = [[NSFileManager.defaultManager contentsOfDirectoryAtPath:root error:nil]
+                       sortedArrayUsingSelector:@selector(compare:)];
+    if (!stamps.count) return @[];
+    NSMutableArray<NSString *> *paths = [NSMutableArray arrayWithCapacity:stamps.count];
+    for (NSString *stamp in [stamps reverseObjectEnumerator]) {
+        [paths addObject:[root stringByAppendingPathComponent:stamp]];
+    }
+    return paths;
+}
+
+BOOL wq_delete_app_backup(NSString *stampDir)
+{
+    return [NSFileManager.defaultManager removeItemAtPath:stampDir error:nil];
+}
+
+NSArray<NSString *> *wq_known_system_groups(void)
+{
+    NSString *base = @"/private/var/containers/Shared/SystemGroup";
+    NSArray<NSString *> *known = @[
+        @"systemgroup.com.apple.mobilegestaltcache",
+        @"systemgroup.com.apple.configurationprofiles",
+        @"systemgroup.com.apple.icloud.searchpartyd.sharedsettings",
+        @"systemgroup.com.apple.lsd.iconscache",
+        @"systemgroup.com.apple.bluetooth",
+        @"systemgroup.com.apple.osanalyticsdiagnostics",
+        @"systemgroup.com.apple.powerlog",
+        @"systemgroup.com.apple.SpringBoard.sharedsettings",
+        @"systemgroup.com.apple.nsurlstoragedresources",
+        @"systemgroup.com.apple.mobileactivationd"
+    ];
+    NSMutableArray<NSString *> *found = [NSMutableArray new];
+    for (NSString *name in known) {
+        NSString *p = [base stringByAppendingPathComponent:name];
+        struct stat st;
+        if (wq_stat(p, &st)) {
+            [found addObject:p];
+        }
+    }
+    return found;
 }
 
 BOOL wq_clear_app_data(NSString *containerDir, unsigned long long *freedBytes)

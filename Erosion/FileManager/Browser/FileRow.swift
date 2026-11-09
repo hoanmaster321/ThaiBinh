@@ -18,6 +18,7 @@ struct FileRow: View {
     @State private var conformsText = false
     @State private var conformsPlist = false
     @State private var conformsZip = false
+    @State private var backupOriginalPath: String? = nil
     
     @State private var showInfo = false
     @State private var showPlistViewer = false
@@ -60,6 +61,13 @@ struct FileRow: View {
                                 Text(file.modifiedDateStr)
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
+                            }
+                            if let orig = backupOriginalPath {
+                                Text("Backup of \(orig)")
+                                    .font(.caption2)
+                                    .foregroundStyle(.blue)
+                                    .lineLimit(1)
+                                    .truncationMode(.head)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -109,6 +117,7 @@ struct FileRow: View {
             if file.uttype.conforms(to: .zip) {
                 conformsZip = true
             }
+            backupOriginalPath = wq_backup_original_path(file.fileURL.path)
         }
         .sheet(isPresented: $showInfo) {
             InfoViewer(file)
@@ -127,6 +136,23 @@ struct FileRow: View {
         .quickLookPreview($previewURL)
         // MARK: cell actions
         .contextMenu {
+            if let origPath = backupOriginalPath {
+                Button {
+                    if let data = readDataWithWQ(file.fileURL) {
+                        var err: NSString?
+                        if wq_write(origPath, data, &err) {
+                            Haptic.shared.play(.soft)
+                            Alertinator.shared.alert(title: "Restored Successfully", body: "Restored file to:\n\(origPath)")
+                        } else {
+                            Alertinator.shared.alert(title: "Restore Failed", body: (err as String?) ?? "Could not write to original location.")
+                        }
+                    }
+                } label: {
+                    Label("Restore to Original Path", systemImage: "arrow.uturn.backward.circle.fill")
+                }
+                Divider()
+            }
+            
             Button {
                 showHexViewer = true
             } label: {
