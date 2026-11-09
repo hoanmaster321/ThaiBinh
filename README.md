@@ -2,11 +2,12 @@
   <br>
   <img src="PreviewIcon.png" alt="ErosionWQ Icon" width="130" style="border-radius: 28px;">
   <br>
-  <h1>ErosionWQ</h1>
+  <h1>ErosionWQ (ThaiBinh)</h1>
   <p><strong>The Ultimate iOS Customization Toolbox, App Data Manager & Cache Cleaner</strong></p>
   <p>A unified fusion of <a href="https://github.com/jailbreakdotparty/Erosion">Erosion</a> and <a href="https://github.com/kolbicz/WQFiles">WQFiles</a>, powered by the <code>worse_query</code> sandbox escape & <code>fsgetpath</code> inode crawler.</p>
 
   <p>
+    <a href="https://github.com/hoanmaster321/ThaiBinh/actions"><img alt="GitHub Actions Build" src="https://github.com/hoanmaster321/ThaiBinh/actions/workflows/build.yml/badge.svg"></a>
     <img alt="iOS Support" src="https://img.shields.io/badge/iOS-16.0%20--%2027.2-007AFF?style=flat-square&logo=apple">
     <img alt="License" src="https://img.shields.io/badge/License-GPL%203.0-green?style=flat-square">
     <img alt="Language" src="https://img.shields.io/badge/Language-Swift%205.10%20%2F%20Obj--C-FA7343?style=flat-square&logo=swift">

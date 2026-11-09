@@ -1,0 +1,82 @@
+name: Build ErosionWQ (.ipa)
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-ipa:
+    runs-on: macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app || sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Build with xcodebuild
+        run: |
+          mkdir -p build/Payload
+          xcodebuild -project Erosion.xcodeproj \
+            -scheme Erosion \
+            -configuration Release \
+            -derivedDataPath build/DerivedData \
+            -destination 'generic/platform=iOS' \
+            build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            ASSETCATALOG_COMPILER_OPTIMIZATION=space \
+            DEPLOYMENT_POSTPROCESSING=YES \
+            STRIP_SWIFT_SYMBOLS=YES \
+            SEPARATE_STRIP=YES \
+            STRIP_STYLE=all
+
+          APP_PATH="build/DerivedData/Build/Products/Release-iphoneos/Erosion.app"
+          cp -r "$APP_PATH" build/Payload/
+
+      - name: Ad-hoc sign with App Group Entitlements
+        run: |
+          TARGET_APP="build/Payload/Erosion.app"
+          rm -rf "$TARGET_APP/_CodeSignature" "$TARGET_APP/embedded.mobileprovision"
+          codesign -f -s - --entitlements "Erosion/Erosion.entitlements" "$TARGET_APP"
+
+      - name: Package IPA
+        run: |
+          cd build
+          zip -9qry "../ErosionWQ.ipa" Payload
+          cd ..
+          ls -lh ErosionWQ.ipa
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ErosionWQ.ipa
+          path: ErosionWQ.ipa
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "ErosionWQ ${{ github.ref_name }}"
+          body: |
+            ### ErosionWQ (ThaiBinh) - All-in-one iOS Toolbox
+            - Tích hợp **Erosion** (MobileGestalt, PosterBoard, Keypads, Respring) và **WQFiles** (App Data Manager, Cache Cleaner, Fast Inode Browser).
+            - Hỗ trợ iOS 16.0 – 27.2 sử dụng sandbox escape `worse_query`.
+            - Cài đặt qua TrollStore, AltStore, Sideloadly hoặc Feather (yêu cầu giữ App Group).
+          files: ErosionWQ.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
