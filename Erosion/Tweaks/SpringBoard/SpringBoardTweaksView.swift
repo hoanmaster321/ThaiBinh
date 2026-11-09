@@ -89,7 +89,7 @@ struct SpringBoardTweaksView: View {
                     Spacer()
                     Text(posterBoardContainer.isEmpty ? "Not Scanned" : "Found")
                         .font(.caption)
-                        .foregroundStyle(posterBoardContainer.isEmpty ? .secondary : .green)
+                        .foregroundStyle(posterBoardContainer.isEmpty ? Color.secondary : Color.green)
                 }
                 
                 if !posterBoardContainer.isEmpty {
@@ -210,7 +210,10 @@ struct SpringBoardTweaksView: View {
     // MARK: - Logic
     
     private func loadCurrentSettings() {
-        _ = mgLoadData()
+        _ = wq_grant(MGURL.fsGestaltURL.deletingLastPathComponent().path)
+        if let dict = NSMutableDictionary(contentsOf: MGURL.fsGestaltURL) {
+            store.mgCurrentDict = dict
+        }
         if let val = store.cacheExtra[shutterClickKey] as? Int, val == 0 {
             disableShutterSound = true
         } else {
