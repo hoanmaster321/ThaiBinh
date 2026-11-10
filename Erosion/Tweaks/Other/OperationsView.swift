@@ -1,8 +1,8 @@
 //
 //  OperationsView.swift
-//  Erosion
+//  ThaiBinh (ErosionWQ)
 //
-//  Created by lunginspector on 8/17/26.
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -38,26 +38,26 @@ struct OperationsView: View {
                         }
                     }
                 } label: {
-                    Label("Load System Target Preset...", systemImage: "bookmark.fill")
+                    Label("Chọn Đường dẫn MCM Mẫu (Presets)...", systemImage: "bookmark.fill")
                 }
                 
-                TextField("Directory", text: $directory)
+                TextField("Thư mục đích (Directory)", text: $directory)
                     .disabled(isAcc)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
-                TextField("File Name", text: $fileName)
+                TextField("Tên tệp (File Name)", text: $fileName)
                     .disabled(isAcc)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                 HStack {
-                    Button("Grant Access") {
+                    Button("Xin quyền Truy cập (Grant Access)") {
                         let fullPath = "\(directory)/\(fileName)"
                         if wq_grant(directory) || wq_grant(fullPath) {
                             isAcc = true
                         } else {
                             let res = wq.grantAccess(path: fullPath)
                             if !res.0 {
-                                Alertinator.shared.alert(title: "Failed to get access to target file!", body: "\(res.1): \(res.2)")
+                                Alertinator.shared.alert(title: "Không thể xin quyền truy cập!", body: "\(res.1): \(res.2)")
                             } else {
                                 isAcc = true
                             }
@@ -68,19 +68,19 @@ struct OperationsView: View {
                         Spacer()
                         HStack {
                             Image(systemName: "checkmark.seal.fill")
-                            Text("Access Granted")
+                            Text("Đã cấp quyền")
                         }
                         .foregroundStyle(.green)
                     }
                 }
                 if isAcc {
-                    Button("Change Path", role: .destructive) {
+                    Button("Đổi đường dẫn khác", role: .destructive) {
                         isAcc = false
                         imprtName = ""
                         imprtData = Data()
                     }
                     
-                    Button("Export Current Target File") {
+                    Button("Xuất / Chia sẻ tệp đích hiện tại") {
                         let fileDir = "\(directory)/\(fileName)"
                         if let temp = makeTemp(URL(fileURLWithPath: fileDir)) {
                             presentShareSheet(with: temp)
@@ -90,12 +90,12 @@ struct OperationsView: View {
                     }
                 }
             } header: {
-                HeaderLabel("Target", symbol: "dot.scope")
+                HeaderLabel("Mục tiêu (Target MCM)", symbol: "dot.scope")
             }
             
             Section {
                 HStack {
-                    Button("Import Replacement File") {
+                    Button("Chọn tệp thay thế từ máy") {
                         showImporter = true
                     }
                     if !imprtName.isEmpty {
@@ -108,68 +108,62 @@ struct OperationsView: View {
                     }
                 }
                 
-                Button("Overwrite Target File (Safe Backup)") {
+                Button("Ghi đè tệp đích (Tự động Sao lưu)") {
                     let targetURL = URL(fileURLWithPath: "\(directory)/\(fileName)")
                     var err: NSString?
                     if wq_write(targetURL.path, imprtData, &err) {
-                        print("(ov) successfully overwrote file via wq_write: \(targetURL.path) (\(imprtData.count) bytes)")
+                        print("(ov) Đã ghi đè tệp qua wq_write: \(targetURL.path) (\(imprtData.count) bytes)")
                         Haptic.shared.play(.soft)
-                        Alertinator.shared.alert(title: "Overwrite Complete", body: "Target file was backed up to Documents/Backups and overwritten in place.")
+                        Alertinator.shared.alert(title: "Ghi đè thành công", body: "Tệp gốc đã được sao lưu vào Documents/Backups trước khi ghi đè.")
                     } else {
                         do {
                             try imprtData.write(to: targetURL)
-                            print("(ov) successfully overwrote file: \(targetURL.path) (\(imprtData.count))")
                             Haptic.shared.play(.soft)
                         } catch {
-                            print("(ov) failed to overwrite: \(error.localizedDescription)")
-                            Alertinator.shared.alert(title: "Failed to overwrite file!", body: (err as String?) ?? error.localizedDescription)
+                            Alertinator.shared.alert(title: "Ghi đè thất bại!", body: (err as String?) ?? error.localizedDescription)
                         }
                     }
                 }
                 .disabled(imprtData.isEmpty || directory.isEmpty || fileName.isEmpty)
                 
-                Button("Write as New File in Directory") {
+                Button("Tạo thành tệp mới trong thư mục") {
                     let targetURL = URL(fileURLWithPath: directory).appendingPathComponent(imprtName)
                     var err: NSString?
                     if wq_create_file(targetURL.path, imprtData, &err) {
-                        print("(ov) successfully created file: \(imprtName) -> \(targetURL.path)")
                         Haptic.shared.play(.soft)
+                        Alertinator.shared.alert(title: "Tạo tệp thành công", body: "Đã tạo \(targetURL.path)")
                     } else {
                         do {
                             try imprtData.write(to: targetURL)
-                            print("(ov) successfully moved file: \(imprtName) -> \(targetURL.path)")
                             Haptic.shared.play(.soft)
                         } catch {
-                            print("(ov) failed to move: \(error.localizedDescription)")
-                            Alertinator.shared.alert(title: "Failed to write file!", body: (err as String?) ?? error.localizedDescription)
+                            Alertinator.shared.alert(title: "Không thể tạo tệp!", body: (err as String?) ?? error.localizedDescription)
                         }
                     }
                 }
                 .disabled(imprtData.isEmpty || directory.isEmpty)
                 
-                Button("Delete Target File (Safe Backup)", role: .destructive) {
+                Button("Xóa tệp đích (Tự động Sao lưu)", role: .destructive) {
                     let targetURL = URL(fileURLWithPath: "\(directory)/\(fileName)")
                     var err: NSString?
                     if wq_delete(targetURL.path, &err) {
-                        print("(ov) successfully deleted file via wq_delete: \(targetURL.path)")
                         Haptic.shared.play(.heavy)
+                        Alertinator.shared.alert(title: "Đã xóa tệp", body: "Tệp đã được sao lưu vào Documents/Backups trước khi xóa.")
                     } else {
                         do {
                             try fm.removeItem(at: targetURL)
-                            print("(ov) successfully deleted file: \(targetURL.path)")
                             Haptic.shared.play(.heavy)
                         } catch {
-                            print("(ov) failed to delete: \(error.localizedDescription)")
-                            Alertinator.shared.alert(title: "Failed to delete file!", body: (err as String?) ?? error.localizedDescription)
+                            Alertinator.shared.alert(title: "Không thể xóa tệp!", body: (err as String?) ?? error.localizedDescription)
                         }
                     }
                 }
                 .disabled(directory.isEmpty || fileName.isEmpty)
             } header: {
-                HeaderLabel("Operations", symbol: "wrench.and.screwdriver")
+                HeaderLabel("Thao tác Tệp", symbol: "wrench.and.screwdriver")
             }
         }
-        .navigationTitle("File Operations")
+        .navigationTitle("Thao tác Tệp MCM")
         .fileImporter(isPresented: $showImporter, allowedContentTypes: [.item]) { result in
             handleImport(result)
         }
@@ -189,12 +183,10 @@ struct OperationsView: View {
                 imprtData = try Data(contentsOf: recURL)
                 imprtName = recURL.lastPathComponent
             } catch {
-                print("(ov) failed to import file: \(error.localizedDescription)")
-                Alertinator.shared.alert(title: "Failed to import file!", body: "This file is likely invalid, corrupted, or inaccessible. Please try a different overwrite file.")
+                Alertinator.shared.alert(title: "Lỗi nhập tệp!", body: "Không thể đọc tệp đã chọn: \(error.localizedDescription)")
             }
         case .failure(let error):
-            print("(ov) failed to import file: \(error.localizedDescription)")
-            Alertinator.shared.alert(title: "Failed to import file!", body: "This file is likely invalid, corrupted, or inaccessible. Please try a different overwrite file.")
+            Alertinator.shared.alert(title: "Lỗi nhập tệp!", body: error.localizedDescription)
         }
     }
 }

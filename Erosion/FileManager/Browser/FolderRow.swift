@@ -85,7 +85,7 @@ struct FolderRow: View {
                 Button {
                     previewURL = file.fileURL
                 } label: {
-                    Label("Quick Look", systemImage: "eye")
+                    Label("Xem nhanh (Quick Look)", systemImage: "eye")
                 }
                 
                 Divider()
@@ -93,21 +93,21 @@ struct FolderRow: View {
                 Button {
                     showInfo.toggle()
                 } label: {
-                    Label("Get Info", systemImage: "info.circle")
+                    Label("Xem thông tin", systemImage: "info.circle")
                 }
                 
                 Button {
-                    Alertinator.shared.prompt(title: "Rename Folder", placeholder: file.name) { result in
+                    Alertinator.shared.prompt(title: "Đổi tên thư mục", placeholder: file.name) { result in
                         if let name = result, !name.isEmpty {
                             if renameFile(file.fileURL, to: name) {
                                 mgr.refreshFiles.toggle()
                             } else {
-                                Alertinator.shared.alert(title: "Failed to rename folder!", body: Errors.checkLogs)
+                                Alertinator.shared.alert(title: "Không thể đổi tên thư mục!", body: Errors.checkLogs)
                             }
                         }
                     }
                 } label: {
-                    Label("Rename", systemImage: "pencil")
+                    Label("Đổi tên", systemImage: "pencil")
                 }
                 
                 Button {
@@ -115,10 +115,10 @@ struct FolderRow: View {
                     if res {
                         mgr.refreshFiles.toggle()
                     } else {
-                        Alertinator.shared.alert(title: "Failed to compress file!", body: Errors.checkLogs)
+                        Alertinator.shared.alert(title: "Không thể nén thư mục!", body: Errors.checkLogs)
                     }
                 } label: {
-                    Label("Compress", systemImage: "archivebox")
+                    Label("Nén ZIP", systemImage: "archivebox")
                 }
                 
                 Button {
@@ -127,7 +127,7 @@ struct FolderRow: View {
                         wq_share_folder(rootVC, file.fileURL.path, file.name, nil)
                     }
                 } label: {
-                    Label("Share as ZIP (AirDrop…)", systemImage: "square.and.arrow.up")
+                    Label("Chia sẻ dạng ZIP (AirDrop…)", systemImage: "square.and.arrow.up")
                 }
                 
                 Divider()
@@ -137,7 +137,7 @@ struct FolderRow: View {
                         presentShareSheet(with: url)
                     }
                 } label: {
-                    Label("Share", systemImage: "square.and.arrow.up")
+                    Label("Chia sẻ", systemImage: "square.and.arrow.up")
                 }
                 
                 Divider()
@@ -153,7 +153,7 @@ struct FolderRow: View {
                     }
                     mgr.refreshFiles.toggle()
                 } label: {
-                    Label("Delete", systemImage: "trash")
+                    Label("Xóa thư mục", systemImage: "trash")
                 }
             }
         }

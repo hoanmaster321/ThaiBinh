@@ -1,8 +1,8 @@
 //
 //  TweaksView.swift
-//  Erosion
+//  ThaiBinh (ErosionWQ)
 //
-//  Created by lunginspector on 8/26/26.
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -14,38 +14,36 @@ struct TweaksView: View {
             List {
                 Section {
                     NavigationLink(destination: ThemeStudioView()) {
-                        Label("Theme & Visual Mods Studio", systemImage: "paintpalette.fill")
+                        Label("Theme & Mod Giao diện (Wallet, Safari, Icon)", systemImage: "paintpalette.fill")
                     }
                     NavigationLink(destination: PosterBoardView()) {
-                        Label("Custom Wallpapers (PosterBoard)", systemImage: "photo.on.rectangle.angled")
+                        Label("Hình nền Động (.tendies PosterBoard)", systemImage: "photo.on.rectangle.angled")
                     }
                     NavigationLink(destination: KeypadView()) {
-                        Label("Dialer Keypad Themer (6 Built-in Themes)", systemImage: "circle.grid.3x3.fill")
+                        Label("Theme Bàn phím Gọi điện (6 Theme dựng sẵn)", systemImage: "circle.grid.3x3.fill")
                     }
                     NavigationLink(destination: SpringBoardTweaksView()) {
-                        Label("SpringBoard, PosterBoard & SystemGroup", systemImage: "sparkles.rectangle.stack")
+                        Label("SpringBoard, Màn hình khóa & SystemGroup", systemImage: "sparkles.rectangle.stack")
                     }
                 } header: {
-                    HeaderLabel("Theming & UI", symbol: "paintbrush")
+                    HeaderLabel("Giao diện & Chủ đề (Theming)", symbol: "paintbrush")
                 }
                 
                 Section {
-                    if raveSupported() || weOnADebugBuild {
-                        NavigationLink(destination: GestaltView()) {
-                            Label("MobileGestalt Hardware Flags", systemImage: "cpu")
-                        }
-                        NavigationLink(destination: ConfigView()) {
-                            Label("Lock Screen Footnote & Supervision", systemImage: "lock.rectangle.on.rectangle")
-                        }
+                    NavigationLink(destination: GestaltView()) {
+                        Label("MobileGestalt (Dynamic Island, AOD, Sạc 80%)", systemImage: "cpu")
+                    }
+                    NavigationLink(destination: ConfigView()) {
+                        Label("Chữ Màn hình khóa & Giám sát (Supervision)", systemImage: "lock.rectangle.on.rectangle")
                     }
                     NavigationLink(destination: OperationsView()) {
-                        Label("Custom File Overwrite & Presets", systemImage: "wrench.and.screwdriver")
+                        Label("Ghi đè Tệp Hệ thống & Preset MCM", systemImage: "wrench.and.screwdriver")
                     }
                 } header: {
-                    HeaderLabel("System & Eligibility", symbol: "gear")
+                    HeaderLabel("Hệ thống & Mở khóa Tính năng", symbol: "gear")
                 }
             }
-            .navigationTitle("Tweaks")
+            .navigationTitle("Tinh chỉnh")
         }
     }
 }

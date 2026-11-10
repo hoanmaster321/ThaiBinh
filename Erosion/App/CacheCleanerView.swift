@@ -1,8 +1,9 @@
 //
 //  CacheCleanerView.swift
-//  ErosionWQ
+//  ThaiBinh (ErosionWQ)
 //
-//  Cache & Temp Cleaner: Purge App Caches, Temporary Files & Crash Logs
+//  Dọn dẹp Bộ nhớ đệm & Tệp tạm trên toàn bộ nhánh MCM Container
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -46,7 +47,7 @@ struct CacheCleanerView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Total Junk Space")
+                                Text("Tổng dung lượng Rác & Cache")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Text(wq_size_text(totalAllBytes))
@@ -55,7 +56,7 @@ struct CacheCleanerView: View {
                             }
                             Spacer()
                             VStack(alignment: .trailing, spacing: 2) {
-                                Text("Selected to Clean")
+                                Text("Đã chọn để dọn")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Text(wq_size_text(totalSelectedBytes))
@@ -65,7 +66,6 @@ struct CacheCleanerView: View {
                             }
                         }
                         
-                        // Progress bar
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 RoundedRectangle(cornerRadius: 6)
@@ -80,21 +80,20 @@ struct CacheCleanerView: View {
                         }
                         .frame(height: 8)
                         
-                        // Selection shortcuts
                         HStack {
-                            Button("Select All") {
+                            Button("Chọn tất cả") {
                                 engine.selectCacheWhere { _ in true }
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
                             
-                            Button("Large (>50MB)") {
+                            Button("Lớn (>50MB)") {
                                 engine.selectCacheWhere { $0.totalBytes >= 50 * 1024 * 1024 }
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
                             
-                            Button("None") {
+                            Button("Bỏ chọn") {
                                 engine.selectCacheWhere { _ in false }
                             }
                             .buttonStyle(.bordered)
@@ -126,14 +125,14 @@ struct CacheCleanerView: View {
                 Section {
                     Button(role: .destructive) {
                         engine.cleanCrashLogs { freed in
-                            alertTitle = "Crash Logs Cleared"
-                            alertMessage = "Purged \(wq_size_text(freed)) of crash reports."
+                            alertTitle = "Đã dọn Chẩn đoán & Icon Cache"
+                            alertMessage = "Đã giải phóng \(wq_size_text(freed)) dữ liệu chẩn đoán hệ thống."
                             showAlert = true
                             engine.scanCaches()
                         }
                     } label: {
                         HStack {
-                            Label("Purge iOS Crash Reports", systemImage: "stethoscope")
+                            Label("Dọn nhanh Chẩn đoán & Icon Cache (SystemGroup)", systemImage: "stethoscope")
                             Spacer()
                             Image(systemName: "trash")
                         }
@@ -144,11 +143,11 @@ struct CacheCleanerView: View {
                     if engine.cacheItems.isEmpty && engine.isScanningCaches {
                         HStack {
                             ProgressView()
-                            Text("Scanning cache directories...")
+                            Text("Đang quét bộ nhớ đệm ứng dụng...")
                                 .padding(.leading, 8)
                         }
                     } else if filteredItems.isEmpty {
-                        Text(searchText.isEmpty ? "No caches found or device already clean." : "No caches matching '\(searchText)'")
+                        Text(searchText.isEmpty ? "Thiết bị đã sạch hoặc chưa tìm thấy bộ nhớ đệm." : "Không có mục nào khớp '\(searchText)'")
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(filteredItems) { item in
@@ -176,7 +175,7 @@ struct CacheCleanerView: View {
                                         .fontWeight(.medium)
                                         .foregroundStyle(.primary)
                                     
-                                    Text("cache \(wq_size_text(item.cacheBytes)) · temp \(wq_size_text(item.tempBytes))")
+                                    Text("cache \(wq_size_text(item.cacheBytes)) · tmp \(wq_size_text(item.tempBytes))")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                 }
@@ -197,25 +196,25 @@ struct CacheCleanerView: View {
                                     Button {
                                         targetBrowserPath = firstDir
                                     } label: {
-                                        Label("Open Caches in File Browser", systemImage: "folder")
+                                        Label("Mở thư mục Caches trong Trình duyệt Tệp", systemImage: "folder")
                                     }
                                 }
                                 if item.targets.count > 1 {
                                     Button {
                                         targetBrowserPath = item.targets[1]
                                     } label: {
-                                        Label("Open tmp in File Browser", systemImage: "folder.badge.gearshape")
+                                        Label("Mở thư mục tmp trong Trình duyệt Tệp", systemImage: "folder.badge.gearshape")
                                     }
                                 }
                             }
                         }
                     }
                 } header: {
-                    Text("App Caches (\(filteredItems.count))")
+                    Text("Bộ nhớ đệm Ứng dụng (\(filteredItems.count))")
                 }
             }
-            .navigationTitle("Cache Cleaner")
-            .searchable(text: $searchText, prompt: "Filter apps")
+            .navigationTitle("Dọn rác & Cache")
+            .searchable(text: $searchText, prompt: "Lọc theo tên ứng dụng")
             .refreshable {
                 engine.scanCaches()
             }
@@ -231,7 +230,7 @@ struct CacheCleanerView: View {
                     } label: {
                         HStack {
                             Image(systemName: "trash.fill")
-                            Text("Clean \(selectedCount) Items (\(wq_size_text(totalSelectedBytes)))")
+                            Text("Dọn sạch \(selectedCount) mục (\(wq_size_text(totalSelectedBytes)))")
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)
@@ -241,28 +240,28 @@ struct CacheCleanerView: View {
                     .disabled(totalSelectedBytes == 0 || engine.isCleaningCaches)
                 }
             }
-            .alert("Purge Selected Caches?", isPresented: $showConfirmClean) {
-                Button("Delete Caches (\(wq_size_text(totalSelectedBytes)))", role: .destructive) {
+            .alert("Xác nhận dọn Bộ nhớ đệm?", isPresented: $showConfirmClean) {
+                Button("Xóa Cache (\(wq_size_text(totalSelectedBytes)))", role: .destructive) {
                     engine.cleanSelectedCaches { freed, allOk in
-                        alertTitle = allOk ? "Cleaning Finished" : "Cleaning Partially Finished"
-                        alertMessage = "Freed \(wq_size_text(freed)).\(allOk ? "" : " Some system files could not be deleted.")"
+                        alertTitle = allOk ? "Dọn rác hoàn tất" : "Đã dọn một phần"
+                        alertMessage = "Đã giải phóng \(wq_size_text(freed)).\(allOk ? "" : " Một số tệp đang được hệ thống sử dụng nên được giữ lại.")"
                         showAlert = true
                     }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("Hủy", role: .cancel) {}
             } message: {
-                Text("This will delete temporary caches and files for the selected applications. Cached data will regenerate when apps run.")
+                Text("Chỉ xóa nội dung trong Library/Caches và tmp. Tài khoản đăng nhập và dữ liệu Documents của bạn hoàn toàn được giữ nguyên.")
             }
             .alert(alertTitle, isPresented: $showAlert) {
-                Button("OK", role: .cancel) {}
+                Button("Đóng", role: .cancel) {}
             } message: {
                 Text(alertMessage)
             }
             .background(
                 Group {
-                    if let navPath = targetBrowserPath {
+                    if let path = targetBrowserPath {
                         NavigationLink(
-                            destination: FileBrowserView(path: URL(fileURLWithPath: navPath), isContainer: false, shouldGrant: true),
+                            destination: FileBrowserView(path: URL(fileURLWithPath: path), isContainer: false, shouldGrant: true),
                             isActive: Binding(
                                 get: { targetBrowserPath != nil },
                                 set: { if !$0 { targetBrowserPath = nil } }

@@ -1,8 +1,6 @@
 //
 //  AppInfoCell.swift
-//  PartyUI
-//
-//  Created by lunginspector on 3/3/26.
+//  ThaiBinh (ErosionWQ)
 //
 
 import SwiftUI
@@ -13,10 +11,15 @@ struct AppInfoCell: View {
     var body: some View {
         HStack(spacing: 14) {
             AppIconCell(image: Image(uiImage: AppInfo.appIcon ?? UIImage()))
-            VStack(alignment: .leading) {
-                Text(AppInfo.appName)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("ThaiBinh (ErosionWQ)")
                     .font(.title3.weight(.semibold))
-                Text("Version \(AppInfo.appVersion) (\(build))")
+                Text("Phiên bản \(AppInfo.appVersion) (\(build))")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Text("© 2026 hoanmaster321 · All Rights Reserved")
+                    .font(.caption2)
+                    .foregroundStyle(.blue)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -27,7 +30,7 @@ struct AppIconCell: View {
     var image: Image
     
     var body: some View {
-        if #available(iOS 19.0, *) {
+        if #available(iOS 26.0, *) {
             image
                 .resizable()
                 .scaledToFit()
@@ -52,8 +55,8 @@ struct AppIconCell: View {
 
 struct PlaceholderAppIconCell: View {
     var body: some View {
-        Image(systemName: "questionmark.square")
-            .foregroundStyle(.secondary)
+        Image(systemName: "sparkles.rectangle.stack.fill")
+            .foregroundStyle(.blue)
             .frame(width: 64, height: 64)
             .background(Color(.systemGray5))
     }

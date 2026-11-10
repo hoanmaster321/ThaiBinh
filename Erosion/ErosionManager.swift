@@ -1,17 +1,15 @@
 //
 //  ErosionManager.swift
-//  Erosion
-//
-//  Created by lunginspector on 8/24/26.
+//  ThaiBinh (ErosionWQ)
 //
 
 import Foundation
 import Combine
 
-let build = "Release"
+let build = "ThaiBinh-Edition"
 
 enum Errors {
-    static var checkLogs = "Check error logs for more detailed information."
+    static var checkLogs = "Vui lòng kiểm tra Nhật ký hệ thống (Console Logs) ở Trang chủ để xem chi tiết."
 }
 
 enum AppURL {
@@ -21,9 +19,9 @@ enum AppURL {
 }
 
 enum AppMsg {
-    static let opFailed = "Restart the app and try again. If this issue persists, your device may be unsupported, or this specific tweak may not work on your device properly."
-    static let applied = "Respring your device for changes to take effect."
-    static let unsupported = "We're sorry, but the exploits that Erosion rely on are patched in this version. Please exit the app."
+    static let opFailed = "Vui lòng khởi động lại ứng dụng và thử lại. Đảm bảo ứng dụng đã được ký kèm quyền App Group."
+    static let applied = "Hãy khởi động lại SpringBoard (Respring) để các thay đổi có hiệu lực."
+    static let unsupported = "Phiên bản iOS hiện tại không hỗ trợ phương thức này."
 }
 
 final class ErosionManager: ObservableObject {

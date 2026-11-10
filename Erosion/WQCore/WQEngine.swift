@@ -87,7 +87,7 @@ final class WQEngine: ObservableObject {
         if let g = wq_app_group() {
             self.activeAppGroup = g
         } else {
-            self.activeAppGroup = "No App Group (Re-sign with group entitlement)"
+            self.activeAppGroup = "Chưa có App Group (Cần ký lại với quyền App Group)"
         }
     }
     
@@ -96,7 +96,7 @@ final class WQEngine: ObservableObject {
     func scanApps() {
         guard !isScanningApps else { return }
         isScanningApps = true
-        scanAppProgress = "Enumerating app containers..."
+        scanAppProgress = "Đang liệt kê các container ứng dụng..."
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -106,7 +106,7 @@ final class WQEngine: ObservableObject {
             let containers = wq_enumerate(root, 400000) { done, total, found in
                 DispatchQueue.main.async {
                     let pct = total > 0 ? (done * 100 / total) : 0
-                    self.scanAppProgress = "Scanning containers... \(pct)% (\(found) found)"
+                    self.scanAppProgress = "Đang quét container... \(pct)% (Tìm thấy \(found))"
                 }
             } ?? []
             
@@ -119,7 +119,7 @@ final class WQEngine: ObservableObject {
                 if resolved == myHome { continue }
                 
                 DispatchQueue.main.async {
-                    self.scanAppProgress = "Analyzing app \(idx + 1) of \(containers.count)..."
+                    self.scanAppProgress = "Đang phân tích ứng dụng \(idx + 1)/\(containers.count)..."
                 }
                 
                 guard let bundleID = wq_container_label(container), !bundleID.isEmpty else {
@@ -170,10 +170,10 @@ final class WQEngine: ObservableObject {
             DispatchQueue.main.async {
                 if ok {
                     self.scanApps()
-                    let msg = "Backup saved to: AppBackups/\(app.bundleID)/\(stampDir?.lastPathComponent ?? "")"
+                    let msg = "Đã lưu bản sao lưu tại: AppBackups/\(app.bundleID)/\(stampDir?.lastPathComponent ?? "")"
                     completion(true, msg)
                 } else {
-                    completion(false, (error as String?) ?? "Backup failed")
+                    completion(false, (error as String?) ?? "Sao lưu thất bại")
                 }
             }
         }
@@ -187,9 +187,9 @@ final class WQEngine: ObservableObject {
             DispatchQueue.main.async {
                 if ok {
                     self.scanApps()
-                    completion(true, "Data successfully restored for \(app.name). Please relaunch the app.")
+                    completion(true, "Đã khôi phục dữ liệu thành công cho \(app.name). Vui lòng mở lại ứng dụng.")
                 } else {
-                    completion(false, (error as String?) ?? "Restore failed")
+                    completion(false, (error as String?) ?? "Khôi phục thất bại")
                 }
             }
         }
@@ -203,7 +203,7 @@ final class WQEngine: ObservableObject {
             DispatchQueue.main.async {
                 self.scanApps()
                 let freedStr = wq_size_text(freed)
-                completion(ok, "Freed \(freedStr). App container is reset.")
+                completion(ok, "Đã giải phóng \(freedStr). Container ứng dụng đã được làm mới.")
             }
         }
     }
@@ -261,12 +261,12 @@ final class WQEngine: ObservableObject {
                 
                 DispatchQueue.main.async {
                     self.scanApps()
-                    completion(true, "Imported backup snapshot: \(stamp)")
+                    completion(true, "Đã nhập bản sao lưu: \(stamp)")
                 }
             } catch {
                 try? FileManager.default.removeItem(at: tmpExtract)
                 DispatchQueue.main.async {
-                    completion(false, "Import failed: \(error.localizedDescription)")
+                    completion(false, "Nhập thất bại: \(error.localizedDescription)")
                 }
             }
         }
@@ -277,16 +277,16 @@ final class WQEngine: ObservableObject {
            let free = attrs[.systemFreeSize] as? UInt64,
            let total = attrs[.systemSize] as? UInt64 {
             let used = total > free ? (total - free) : 0
-            return "\(wq_size_text(used)) used / \(wq_size_text(free)) free (of \(wq_size_text(total)))"
+            return "Đã dùng \(wq_size_text(used)) / Trống \(wq_size_text(free)) (Tổng \(wq_size_text(total)))"
         }
-        return "Storage stats unavailable"
+        return "Không có thông tin bộ nhớ"
     }
     
     var totalSafetyBackupsText: String {
         let safeBytes = wq_dir_size(wq_backup_root())
         let docs = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first ?? ""
         let appBackupsBytes = wq_dir_size((docs as NSString).appendingPathComponent("AppBackups"))
-        return "App Snapshots: \(wq_size_text(appBackupsBytes)) · File Backups: \(wq_size_text(safeBytes))"
+        return "Sao lưu App: \(wq_size_text(appBackupsBytes)) · Sao lưu Tệp: \(wq_size_text(safeBytes))"
     }
     
     // MARK: - Cache Cleaner
@@ -294,7 +294,7 @@ final class WQEngine: ObservableObject {
     func scanCaches() {
         guard !isScanningCaches else { return }
         isScanningCaches = true
-        cleanStatusMessage = "Scanning application caches..."
+        cleanStatusMessage = "Đang quét bộ nhớ đệm ứng dụng..."
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -381,7 +381,7 @@ final class WQEngine: ObservableObject {
         guard !selected.isEmpty else { return }
         
         isCleaningCaches = true
-        cleanStatusMessage = "Purging selected caches..."
+        cleanStatusMessage = "Đang dọn dẹp các bộ nhớ đệm đã chọn..."
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -390,7 +390,7 @@ final class WQEngine: ObservableObject {
             
             for (idx, item) in selected.enumerated() {
                 DispatchQueue.main.async {
-                    self.cleanStatusMessage = "Cleaning \(idx + 1) of \(selected.count): \(item.name)"
+                    self.cleanStatusMessage = "Đang dọn \(idx + 1)/\(selected.count): \(item.name)"
                 }
                 for dir in item.targets {
                     var freed: UInt64 = 0

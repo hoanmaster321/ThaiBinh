@@ -1,12 +1,11 @@
 //
 //  GestaltView.swift
-//  Erosion
+//  ThaiBinh (ErosionWQ)
 //
-//  Created by lunginspector on 8/14/26.
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
-
 import UniformTypeIdentifiers
 
 struct GestaltView: View {
@@ -37,10 +36,10 @@ struct GestaltView: View {
             List {
                 Section {
                     HStack {
-                        Picker("Subtype", selection: $mgSubtype) {
-                            Text("Original (\(mgOgSubtype))").tag(mgOgSubtype)
+                        Picker("Độ phân giải (Subtype)", selection: $mgSubtype) {
+                            Text("Mặc định (\(mgOgSubtype))").tag(mgOgSubtype)
                             if isDynamIslandHD() && doubleSysVrs() < 19.0 {
-                                Text("Disable Dynamic Island").tag(2436)
+                                Text("Tắt Dynamic Island").tag(2436)
                             }
                             Text("iPhone 14 Pro").tag(2436)
                             Text("iPhone 14 Pro Max").tag(2796)
@@ -56,72 +55,72 @@ struct GestaltView: View {
                                 Text("iPhone 18 Pro Max").tag(2670)
                             }
                             if isHomeButtonHD() {
-                                Text("iPhone X Gestures").tag(2436)
+                                Text("Cử chỉ vuốt iPhone X").tag(2436)
                             }
                         }
                         Spacer()
                         Button {
-                            Alertinator.shared.alert(title: "Subtype Info", body: MGMsg.subtype)
+                            Alertinator.shared.alert(title: "Thông tin Subtype", body: MGMsg.subtype)
                         } label: {
                             Image(systemName: "info.circle")
                                 .frame(width: 24, height: 22)
                         }
                         .buttonStyle(.plain)
                     }
-                    Toggle("Custom Device Name", isOn: $mgEnableDeviceName)
+                    Toggle("Đổi tên mô tả thiết bị", isOn: $mgEnableDeviceName)
                     if mgEnableDeviceName {
-                        TextField("Device Name", text: $mgDeviceName)
+                        TextField("Tên thiết bị tùy chỉnh", text: $mgDeviceName)
                     }
                 } header: {
-                    HeaderLabel("Artwork", symbol: "paintbrush.pointed")
+                    HeaderLabel("Hiển thị & Khung hình (Artwork)", symbol: "paintbrush.pointed")
                 }
                 
                 if !isDynamIslandHD() || !isAODHD() || !isBootChimeHD() || !isChargeLimitHD() || mgOverrideGates {
                     Section {
                         if !isDynamIslandHD() || mgOverrideGates {
-                            PlainToggle("Enable Dynamic Island", minVrs: 19.0, isOn: store.mgKeyBinding([MGKey.island]))
+                            PlainToggle("Bật Dynamic Island", minVrs: 19.0, isOn: store.mgKeyBinding([MGKey.island]))
                         }
                         if !isAODHD() || mgOverrideGates {
-                            PlainToggle("Enable AOD", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.AOD, MGKey.AOTime]))
+                            PlainToggle("Bật Màn hình luôn sáng (AOD)", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.AOD, MGKey.AOTime]))
                             if store.isEnabled([MGKey.AOD]) {
-                                PlainToggle("Enable AOD Vibrancy", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.AODVibrancy]))
+                                PlainToggle("Hiệu ứng AOD Vibrancy", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.AODVibrancy]))
                             }
                         }
                         if !isBootChimeHD() || mgOverrideGates {
-                            PlainToggle("Enable Charge Limit", minVrs: 17.0, isOn: store.mgKeyBinding([MGKey.chargeLim]))
+                            PlainToggle("Giới hạn sạc 80% (Charge Limit)", minVrs: 17.0, isOn: store.mgKeyBinding([MGKey.chargeLim]))
                         }
                         if !isChargeLimitHD() || mgOverrideGates {
-                            PlainToggle("Enable Boot Chime", isOn: store.mgKeyBinding([MGKey.bootChime]))
+                            PlainToggle("Âm thanh khởi động (Boot Chime)", isOn: store.mgKeyBinding([MGKey.bootChime]))
                         }
                     } header: {
-                        HeaderLabel("Hardware Features", symbol: "gearshape")
+                        HeaderLabel("Tính năng Phần cứng", symbol: "gearshape")
                     }
                 }
                 
                 Section {
-                    PlainToggle("Enable Internal Install", infoType: .info, infoMessage: MGMsg.intInstall, isOn: store.mgKeyBinding([MGKey.intInstall]))
-                    PlainToggle("Enable Internal Build", infoType: .info, infoMessage: MGMsg.intBuild, isOn: store.mgKeyBinding([MGKey.intBuild]))
+                    PlainToggle("Bật Internal Install", infoType: .info, infoMessage: MGMsg.intInstall, isOn: store.mgKeyBinding([MGKey.intInstall]))
+                    PlainToggle("Bật Internal Build (Dung lượng ẩn)", infoType: .info, infoMessage: MGMsg.intBuild, isOn: store.mgKeyBinding([MGKey.intBuild]))
                 } header: {
-                    HeaderLabel("Internal", symbol: "ant")
+                    HeaderLabel("Tính năng Nội bộ (Internal)", symbol: "ant")
                 }
                 .disabled(store.isEnabled([MGKey.appIntell]))
                 
                 Section {
-                    PlainToggle("Enable SRD UI", minVrs: 26.0, isOn: store.mgKeyBinding([MGKey.srd]))
-                    if showRegionTweak {
-                        PlainToggle("Disable Region Restrictions", isOn: store.mgRegionRestrictionsBinding())
+                    PlainToggle("Bật giao diện SRD UI", minVrs: 26.0, isOn: store.mgKeyBinding([MGKey.srd]))
+                    if showRegionTweak || mgOverrideGates {
+                        PlainToggle("Gỡ giới hạn vùng (Tắt âm chụp ảnh)", isOn: store.mgRegionRestrictionsBinding())
                     }
                     if !isAppleIntellHD() || mgOverrideGates {
-                        PlainToggle("Enable Apple Intelligence", minVrs: 18.1, isOn: store.mgKeyBinding([MGKey.appIntell]))
-                            .onChange(of: store.mgKeyBinding([MGKey.appIntell]).wrappedValue) { (oldVal, newVal) in
+                        PlainToggle("Mở khóa Apple Intelligence", minVrs: 18.1, isOn: store.mgKeyBinding([MGKey.appIntell]))
+                            .onChange(of: store.mgKeyBinding([MGKey.appIntell]).wrappedValue) { (_, newVal) in
                                 if newVal {
                                     store.mgPullKeys([MGKey.intBuild, MGKey.intInstall])
                                 }
                             }
                     }
                     HStack(spacing: 10) {
-                        Picker("Spoofing", selection: $mgProductType) {
-                            Text("Default").tag(ogMachineName)
+                        Picker("Giả lập mã máy (Spoof)", selection: $mgProductType) {
+                            Text("Mặc định").tag(ogMachineName)
                             if ogMachineName.contains("Pad") {
                                 if doubleSysVrs() >= 17.4 {
                                     Text("iPad Pro 11-inch (M4)").tag("iPad16,3")
@@ -152,7 +151,7 @@ struct GestaltView: View {
                             }
                         }
                         Button {
-                            Alertinator.shared.alert(title: "Device Spoofing Info", body: isAppleIntellHD() ? MGMsg.spoofUseless : MGMsg.spoofAI)
+                            Alertinator.shared.alert(title: "Thông tin Giả lập", body: isAppleIntellHD() ? MGMsg.spoofUseless : MGMsg.spoofAI)
                         } label: {
                             Image(systemName: "info.circle")
                                 .frame(width: 24, height: 22)
@@ -160,41 +159,41 @@ struct GestaltView: View {
                         .buttonStyle(.plain)
                     }
                 } header: {
-                    HeaderLabel("Eligibility", symbol: "flag")
+                    HeaderLabel("Mở khóa Điều kiện (Eligibility)", symbol: "flag")
                 }
                 
                 Section {
                     if !isCrashDectHD() || mgOverrideGates {
-                        PlainToggle("Crash Detection", isOn: store.mgKeyBinding([MGKey.crashDet]))
+                        PlainToggle("Phát hiện va chạm (Crash Detection)", isOn: store.mgKeyBinding([MGKey.crashDet]))
                     }
                     if !isPWMHD() || mgOverrideGates {
-                        PlainToggle("Pulse Width Modulation", minVrs: 19.0, isOn: store.mgKeyBinding([MGKey.pwm]))
+                        PlainToggle("Điều chế độ rộng xung (PWM)", minVrs: 19.0, isOn: store.mgKeyBinding([MGKey.pwm]))
                     }
                     if ogMachineName.contains("iPhone") || mgOverrideGates {
-                        PlainToggle("Apple Pencil", isOn: store.mgKeyBinding([MGKey.appPencil]))
+                        PlainToggle("Hỗ trợ Apple Pencil", isOn: store.mgKeyBinding([MGKey.appPencil]))
                     }
                     if !isCamControlHD() || mgOverrideGates {
-                        PlainToggle("Camera Control", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.camButton, MGKey.grapPefr]))
+                        PlainToggle("Điều khiển Camera (Camera Control)", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.camButton, MGKey.grapPefr]))
                     }
                     if !isActionButtonHD() || mgOverrideGates {
-                        PlainToggle("Action Button", minVrs: 17.0, isOn: store.mgKeyBinding([MGKey.actButton]))
+                        PlainToggle("Nút Tác Vụ (Action Button)", minVrs: 17.0, isOn: store.mgKeyBinding([MGKey.actButton]))
                     }
                     if isHomeButtonHD() || mgOverrideGates {
-                        PlainToggle("Tap to Wake", isOn: store.mgKeyBinding([MGKey.tapToWake]))
+                        PlainToggle("Chạm để bật màn hình (Tap to Wake)", isOn: store.mgKeyBinding([MGKey.tapToWake]))
                     }
                 } header: {
-                    HeaderLabel("Preference Bundles", symbol: "gear")
+                    HeaderLabel("Menu Cài đặt (Preference Bundles)", symbol: "gear")
                 }
                 
                 Section {
                     if machineName().contains("iPad") || mgOverrideGates {
-                        PlainToggle("Enable Stage Manager", isOn: store.mgKeyBinding([MGKey.stageMgr]))
+                        PlainToggle("Bật Quản lý Màn hình (Stage Manager)", isOn: store.mgKeyBinding([MGKey.stageMgr]))
                     }
                     if store.strVal(forKey: MGKey.deviceClass) == "iPhone" || mgOverrideGates {
-                        PlainToggle("Enable iPadOS UI", infoType: .warning, infoMessage: MGMsg.ipadOS, isOn: store.mgTrollPadBinding())
+                        PlainToggle("Bật giao diện iPadOS UI", infoType: .warning, infoMessage: MGMsg.ipadOS, isOn: store.mgTrollPadBinding())
                     }
                 } header: {
-                    HeaderLabel("iPadOS", symbol: "ipad")
+                    HeaderLabel("Tính năng iPadOS", symbol: "ipad")
                 }
             }
             .navigationTitle("MobileGestalt")
@@ -205,64 +204,70 @@ struct GestaltView: View {
                         Button {
                             mgRevert()
                         } label: {
-                            Label("Revert Tweaks", systemImage: "xmark")
+                            Label("Hoàn tác về mặc định", systemImage: "xmark")
                         }
                         
                         Button(role: .destructive) {
-                            Alertinator.shared.alert(title: "Are you sure you'd like to reset MobileGestalt?", body: MGMsg.mgReset, actionLabel: "Confirm", action: {
+                            Alertinator.shared.alert(title: "Đặt lại MobileGestalt?", body: MGMsg.mgReset, actionLabel: "Xác nhận", action: {
                                 do {
-                                    try fm.removeItem(at: MGURL.savedGestaltURL)
-                                    try fm.removeItem(at: MGURL.fsGestaltURL)
+                                    try? fm.removeItem(at: MGURL.savedGestaltURL)
+                                    var err: NSString?
+                                    if !wq_delete(MGURL.fsGestaltURL.path, &err) {
+                                        try fm.removeItem(at: MGURL.fsGestaltURL)
+                                    }
                                     store.mgCurrentDict = NSMutableDictionary()
-                                    Alertinator.shared.alert(title: "Successfully reset MobileGestalt!", body: MGMsg.mgResetComp, showCancel: false, actionLabel: "Exit App", action: { exitinator() })
+                                    Alertinator.shared.alert(title: "Đã đặt lại MobileGestalt!", body: MGMsg.mgResetComp, showCancel: false, actionLabel: "Thoát ứng dụng", action: { exitinator() })
                                 } catch {
                                     print("(mg) failed to reset mobilegestalt: \(error.localizedDescription)")
-                                    Alertinator.shared.alert(title: "Failed to reset MobileGestalt!", body: AppMsg.opFailed)
+                                    Alertinator.shared.alert(title: "Lỗi đặt lại MobileGestalt!", body: AppMsg.opFailed)
                                 }
                             })
                         } label: {
-                            Label("Reset Gestalt", systemImage: "trash")
+                            Label("Xóa & Tạo lại Gestalt", systemImage: "trash")
                         }
                         
                         Divider()
                         
                         if showCustomKeys {
                             NavigationLink(destination: CustomKeyView()) {
-                                Label("Custom Keys", systemImage: "pencil")
+                                Label("Khóa tùy chỉnh (Custom Keys)", systemImage: "pencil")
                             }
                         }
                         
-                        // tweak-specific settings
                         NavigationLink {
                             List {
                                 Section {
-                                    Button("Export Current Gestalt") {
-                                        presentShareSheet(with: MGURL.fsGestaltURL)
+                                    Button("Xuất tệp Gestalt hiện tại") {
+                                        if let temp = makeTemp(MGURL.fsGestaltURL) {
+                                            presentShareSheet(with: temp)
+                                        } else {
+                                            presentShareSheet(with: MGURL.fsGestaltURL)
+                                        }
                                     }
-                                    Button("Export Original Gestalt") {
+                                    Button("Xuất tệp Gestalt gốc đã lưu") {
                                         presentShareSheet(with: MGURL.savedGestaltURL)
                                     }
-                                    Button("Reset Saved Gestalt", role: .destructive) {
-                                        Alertinator.shared.alert(title: "Warning!", body: MGMsg.mgResetSavWarn, action: {
+                                    Button("Cập nhật lại bản Gestalt gốc", role: .destructive) {
+                                        Alertinator.shared.alert(title: "Cảnh báo!", body: MGMsg.mgResetSavWarn, action: {
                                             try? fm.removeItem(at: MGURL.savedGestaltURL)
                                             let _ = mgLoadData()
                                         })
                                     }
                                 } header: {
-                                    HeaderLabel("Data", symbol: "loupe")
+                                    HeaderLabel("Dữ liệu sao lưu", symbol: "loupe")
                                 }
                                 
                                 Section {
-                                    PlainToggle("Show Hidden Tweaks", infoType: .warning, infoMessage: MGMsg.hidTweakWarn, isOn: $mgOverrideGates)
-                                    Toggle("Show Custom Keys", isOn: $showCustomKeys)
-                                    Toggle("Overwrite Atomically", isOn: $mgWriteAtomically)
+                                    PlainToggle("Hiển thị toàn bộ Tinh chỉnh ẩn", infoType: .warning, infoMessage: MGMsg.hidTweakWarn, isOn: $mgOverrideGates)
+                                    Toggle("Bật mục Khóa tùy chỉnh", isOn: $showCustomKeys)
+                                    Toggle("Ghi đè bền vững (Atomic Write)", isOn: $mgWriteAtomically)
                                 } footer: {
-                                    Text("When atomic writes are enabled, MobileGestalt will not revert after a reboot.")
+                                    Text("Khi bật Atomic Write, các tinh chỉnh MobileGestalt sẽ giữ nguyên sau khi khởi động lại máy.")
                                 }
                             }
-                            .navigationTitle("Gestalt Settings")
+                            .navigationTitle("Cài đặt Gestalt")
                         } label: {
-                            Label("Settings", systemImage: "gear")
+                            Label("Cài đặt Gestalt", systemImage: "gear")
                         }
                     } label: {
                         Label("Menu", systemImage: "ellipsis")
@@ -270,7 +275,7 @@ struct GestaltView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Apply", role: .adaptiveConfirm) {
+                    Button("Áp dụng", role: .adaptiveConfirm) {
                         if !hasShownSheet {
                             showInfoSheet = true
                         } else {
@@ -282,14 +287,14 @@ struct GestaltView: View {
             .sheet(isPresented: $showInfoSheet) {
                 NavigationStack {
                     VStack {
-                        InfoSheet(title: "Before you begin...") {
-                            InfoSheetCell(title: "Important Warning!", symbol: "exclamationmark.triangle.fill", context: MGMsg.support)
+                        InfoSheet(title: "Lưu ý trước khi áp dụng...") {
+                            InfoSheetCell(title: "Cảnh báo quan trọng!", symbol: "exclamationmark.triangle.fill", context: MGMsg.support)
                                 .modifier(SectionPlatter())
-                            InfoSheetCell(title: "Apple Intelligence (Classic)", symbol: "apple.intelligence", context: MGMsg.spoofAI)
-                            InfoSheetCell(title: "iPadOS UI", symbol: "ipad", context: MGMsg.ipadOS)
-                            InfoSheetCell(title: "Region Restrictions", symbol: "map", context: MGMsg.region)
+                            InfoSheetCell(title: "Apple Intelligence", symbol: "apple.intelligence", context: MGMsg.spoofAI)
+                            InfoSheetCell(title: "Giao diện iPadOS UI", symbol: "ipad", context: MGMsg.ipadOS)
+                            InfoSheetCell(title: "Gỡ giới hạn vùng", symbol: "map", context: MGMsg.region)
                         } button: {
-                            Button("Apply") {
+                            Button("Áp dụng ngay") {
                                 showInfoSheet = false
                                 hasShownSheet = true
                                 idiotButtonTimerComplete = false
@@ -302,13 +307,13 @@ struct GestaltView: View {
                         }
                     }
                     .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                             idiotButtonTimerComplete = true
                         }
                     }
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button("Cancel") {
+                            Button("Hủy") {
                                 showInfoSheet = false
                                 idiotButtonTimerComplete = false
                             }
@@ -317,21 +322,18 @@ struct GestaltView: View {
                 }
             }
             .onAppear {
+                _ = wq_grant(MGURL.fsGestaltURL.deletingLastPathComponent().path)
                 store.mgCurrentDict = mgLoadData()
-                let isWritable = fm.isWritableFile(atPath: MGURL.fsGestaltURL.path)
-                if !isWritable {
-                    let res = wq.grantAccess(path: MGURL.fsGestaltURL.deletingLastPathComponent().path)
-                    if !res.0 {
-                        Alertinator.shared.alert(title: "Failed to get write access to MobileGestalt!", body: "Tweaks will NOT apply. Maybe try restarting the app?")
-                    }
-                }
             }
         }
     }
     
     private func mgLoadData() -> NSMutableDictionary {
+        _ = wq_grant(MGURL.fsGestaltURL.deletingLastPathComponent().path)
         do {
-            let mgData = try Data(contentsOf: MGURL.fsGestaltURL)
+            guard let mgData = readDataWithWQ(MGURL.fsGestaltURL) else {
+                throw "Không thể đọc tệp com.apple.MobileGestalt.plist"
+            }
             if !fm.fileExists(atPath: MGURL.savedGestaltURL.path) {
                 try mgData.write(to: MGURL.savedGestaltURL)
                 if let locale = Locale.current.region?.identifier {
@@ -344,12 +346,10 @@ struct GestaltView: View {
                let ogArtwork = ogCacheExtra[MGKey.artwork] as? NSDictionary {
                 mgOgSubtype = ogArtwork["ArtworkDeviceSubType"] as? Int ?? 0
                 mgOgDeviceName = ogArtwork["ArtworkDeviceProductDescription"] as? String ?? ""
-            } else {
-                throw "failed to get information from mobilegestalt"
             }
             
-            guard let currentDict = NSMutableDictionary(contentsOf: MGURL.fsGestaltURL) else {
-                throw "failed to get nsmutabledictionary from mobilegestalt"
+            guard let currentDict = (try? PropertyListSerialization.propertyList(from: mgData, options: .mutableContainersAndLeaves, format: nil)) as? NSMutableDictionary else {
+                throw "Không thể phân tích cấu trúc từ điển MobileGestalt"
             }
             
             if let cacheExtra = currentDict["CacheExtra"] as? NSDictionary,
@@ -364,9 +364,9 @@ struct GestaltView: View {
             
             return currentDict
         } catch {
-            print("(mg) failed to get mobilegestalt: \(error.localizedDescription)")
+            print("(mg) Lỗi đọc MobileGestalt: \(error.localizedDescription)")
             Haptic.shared.play(.heavy)
-            Alertinator.shared.alert(title: "Failed to get MobileGestalt!", body: "Tweaks will not work properly. Please leave this page.", showCancel: false, actionLabel: "Exit", action: { dismiss() })
+            Alertinator.shared.alert(title: "Không thể đọc MobileGestalt!", body: "Hãy kiểm tra lại quyền App Group của ứng dụng.\nChi tiết: \(error.localizedDescription)")
         }
         
         return [:]
@@ -391,55 +391,51 @@ struct GestaltView: View {
                     }
                 }
             } else {
-                throw "failed to write keys to mobilegestalt!"
+                throw "Chưa nạp được từ điển CacheExtra của MobileGestalt!"
             }
             
             let data = try PropertyListSerialization.data(fromPropertyList: mgDictToApply, format: .binary, options: 0)
             let res = mgWrite(data)
             
             if res {
-                print("[*] successfully overwrote mobilegestalt!")
+                print("[*] Đã ghi đè MobileGestalt thành công!")
                 Haptic.shared.play(.soft)
                 if autoRespring || isFromSheet {
                     mgr.shouldRespring = true
                 } else {
-                    Alertinator.shared.alert(title: "Successfully appiled MobileGestalt tweaks!", body: AppMsg.applied + (store.isEnabled([MGKey.appIntell]) ? " You'll have to reboot your device if you want to use Apple Intelligence." : ""), actionLabel: "Respring", action: { mgr.shouldRespring = true })
+                    Alertinator.shared.alert(title: "Đã áp dụng MobileGestalt!", body: AppMsg.applied + (store.isEnabled([MGKey.appIntell]) ? " Hãy khởi động lại máy nếu bạn bật Apple Intelligence." : ""), actionLabel: "Respring", action: { mgr.shouldRespring = true })
                 }
             } else {
-                throw "overwrite failed!"
+                throw "Ghi đè thất bại!"
             }
         } catch {
-            print("(mg) failed to apply mobilegestalt: \(error.localizedDescription)")
-            Alertinator.shared.alert(title: "Failed to apply MobileGestalt!", body: "Error: \(error.localizedDescription)")
+            print("(mg) Lỗi áp dụng MobileGestalt: \(error.localizedDescription)")
+            Alertinator.shared.alert(title: "Lỗi áp dụng MobileGestalt!", body: "Chi tiết: \(error.localizedDescription)")
         }
     }
     
     private func mgRevert() {
         do {
             guard let mgDictToApply = NSMutableDictionary(contentsOf: MGURL.savedGestaltURL) else {
-                throw "failed to get mobilegestalt dict!"
+                throw "Không tìm thấy bản sao lưu Gestalt gốc!"
             }
             
             let data = try PropertyListSerialization.data(fromPropertyList: mgDictToApply, format: .binary, options: 0)
             let res = mgWrite(data)
             
             if res {
-                print("[*] successfully overwrote mobilegestalt!")
+                print("[*] Đã khôi phục MobileGestalt gốc!")
                 Haptic.shared.play(.soft)
                 if let dict = NSMutableDictionary(contentsOf: MGURL.savedGestaltURL) {
                     store.mgCurrentDict = dict
                 }
-                Alertinator.shared.alert(title: "Successfully reverted MobileGestalt tweaks!", body: MGMsg.revertComp)
+                Alertinator.shared.alert(title: "Đã hoàn tác MobileGestalt!", body: MGMsg.revertComp)
             } else {
-                throw "overwrite failed!"
+                throw "Ghi đè thất bại!"
             }
         } catch {
-            print("(mg) failed to revert mobilegestalt: \(error.localizedDescription)")
-            Alertinator.shared.alert(title: "Failed to revert MobileGestalt!", body: AppMsg.opFailed)
+            print("(mg) Lỗi hoàn tác MobileGestalt: \(error.localizedDescription)")
+            Alertinator.shared.alert(title: "Không thể hoàn tác MobileGestalt!", body: AppMsg.opFailed)
         }
     }
-}
-
-#Preview {
-    ContentView()
 }

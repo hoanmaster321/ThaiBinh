@@ -1,12 +1,9 @@
 //
 //  ThemeStudioView.swift
-//  ErosionWQ
+//  ThaiBinh (ErosionWQ)
 //
-//  Visual Theme & Asset Modding Studio (100% MCM Container Scoped):
-//  1. Apple Wallet / Passbook Card Skin Modder (com.apple.Passbook)
-//  2. Lock Screen Poster & Clock Descriptor Inspector (com.apple.PosterBoard)
-//  3. Safari Start Page & Experimental Flags Modder (com.apple.mobilesafari)
-//  4. SystemGroup App Icon Cache Inspector (systemgroup.com.apple.lsd.iconscache)
+//  Visual Theme & Asset Modding Studio (100% MCM Container Scoped)
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -57,13 +54,13 @@ struct ThemeStudioView: View {
             // MARK: - 1. Quick Links to Built-in Themers
             Section {
                 NavigationLink(destination: PosterBoardView()) {
-                    Label("Custom Wallpapers (.tendies)", systemImage: "photo.on.rectangle.angled")
+                    Label("Cài Hình nền Động (.tendies)", systemImage: "photo.on.rectangle.angled")
                 }
                 NavigationLink(destination: KeypadView()) {
-                    Label("Dialer Keypad Studio (6 Built-in Themes)", systemImage: "circle.grid.3x3.fill")
+                    Label("Mod Bàn phím Gọi điện (6 Theme dựng sẵn)", systemImage: "circle.grid.3x3.fill")
                 }
             } header: {
-                HeaderLabel("Core Theme Engines", symbol: "paintpalette")
+                HeaderLabel("Công cụ Theme Chính", symbol: "paintpalette")
             }
             
             // MARK: - 2. Apple Wallet / Passbook Card Art Modder
@@ -71,25 +68,25 @@ struct ThemeStudioView: View {
                 if isScanning {
                     HStack {
                         ProgressView()
-                        Text("Scanning MCM containers for themeable assets...")
+                        Text("Đang quét các MCM container để tìm tài nguyên...")
                             .font(.caption)
                             .padding(.leading, 6)
                     }
                 } else if walletAssets.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(passbookContainer.isEmpty ? "Passbook container not scanned yet." : "No cached .pkpass card images found in Passbook container.")
+                        Text(passbookContainer.isEmpty ? "Chưa quét container Ví (Passbook)." : "Không tìm thấy ảnh thẻ .pkpass nào trong Ví Apple Wallet.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         
                         HStack(spacing: 12) {
-                            Button("Scan Containers") {
+                            Button("Quét Container") {
                                 scanThemeContainers()
                             }
                             .buttonStyle(.borderedProminent)
                             .controlSize(.small)
                             
                             if !passbookContainer.isEmpty {
-                                Button("Open Passbook Container") {
+                                Button("Mở thư mục Passbook") {
                                     navigateToPath = URL(fileURLWithPath: passbookContainer)
                                 }
                                 .buttonStyle(.bordered)
@@ -113,7 +110,7 @@ struct ThemeStudioView: View {
                                     .lineLimit(1)
                             }
                             Spacer()
-                            Button("Replace Art") {
+                            Button("Đổi ảnh thẻ") {
                                 selectedWalletAsset = asset
                                 showPhotoPicker = true
                             }
@@ -125,13 +122,13 @@ struct ThemeStudioView: View {
                     Button {
                         navigateToPath = URL(fileURLWithPath: passbookContainer)
                     } label: {
-                        Label("Browse Passbook Container", systemImage: "folder")
+                        Label("Duyệt Container Passbook", systemImage: "folder")
                     }
                 }
             } header: {
-                HeaderLabel("Wallet / Passbook Card Skins", symbol: "creditcard")
+                HeaderLabel("Mod Skin Thẻ Apple Wallet / Passbook", symbol: "creditcard")
             } footer: {
-                Text("Replaces cached card artwork inside com.apple.Passbook (/var/mobile/Containers/Data/Application/*). Original card images are backed up to Documents/Backups.")
+                Text("Thay thế ảnh nền thẻ lưu trong com.apple.Passbook (/var/mobile/Containers/Data/Application/*). Ảnh gốc được tự động sao lưu vào Documents/Backups.")
             }
             
             // MARK: - 3. PosterBoard Lock Screen Providers
@@ -140,7 +137,7 @@ struct ThemeStudioView: View {
                     Button {
                         scanThemeContainers()
                     } label: {
-                        Label("Scan Lock Screen Poster Providers", systemImage: "sparkles.rectangle.stack")
+                        Label("Quét Danh mục Hình nền PosterBoard", systemImage: "sparkles.rectangle.stack")
                     }
                 } else {
                     ForEach(posterProviders) { provider in
@@ -168,9 +165,9 @@ struct ThemeStudioView: View {
                     }
                 }
             } header: {
-                HeaderLabel("PosterBoard Wallpaper Descriptors", symbol: "sparkles")
+                HeaderLabel("Các bộ Hình nền Màn hình khóa (PosterBoard)", symbol: "sparkles")
             } footer: {
-                Text("Inspects PRBPosterExtensionDataStore inside com.apple.PosterBoard to customize Collections, Mercury, Photos, Weather, and Emoji lock screen posters.")
+                Text("Truy cập trực tiếp PRBPosterExtensionDataStore bên trong com.apple.PosterBoard để tùy biến Collections, Mercury, Photos, Weather và Emoji.")
             }
             
             // MARK: - 4. Safari & SystemGroup Icon Cache
@@ -182,20 +179,20 @@ struct ThemeStudioView: View {
                         inspectPlistURL = URL(fileURLWithPath: prefs)
                         showPlistSheet = true
                     } label: {
-                        Label("Edit Safari Preferences & Flags (.plist)", systemImage: "safari")
+                        Label("Sửa Cài đặt & Cờ ẩn Safari (.plist)", systemImage: "safari")
                     }
                     
                     Button {
                         navigateToPath = URL(fileURLWithPath: safariContainer)
                     } label: {
-                        Label("Browse Safari Data Container", systemImage: "folder.badge.gearshape")
+                        Label("Mở Container Dữ liệu Safari", systemImage: "folder.badge.gearshape")
                     }
                 }
                 
                 HStack {
-                    Label("System Icon Cache (lsd)", systemImage: "app.badge")
+                    Label("Bộ nhớ đệm Icon (lsd)", systemImage: "app.badge")
                     Spacer()
-                    Text("\(iconCacheCount) files (\(wq_size_text(iconCacheBytes)))")
+                    Text("\(iconCacheCount) tệp (\(wq_size_text(iconCacheBytes)))")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -204,16 +201,16 @@ struct ThemeStudioView: View {
                     _ = wq_grant(lsdIconsCacheRoot)
                     navigateToPath = URL(fileURLWithPath: lsdIconsCacheRoot)
                 } label: {
-                    Label("Browse SystemGroup Icon Cache", systemImage: "square.grid.2x2")
+                    Label("Duyệt Thư mục Icon Cache (SystemGroup)", systemImage: "square.grid.2x2")
                 }
                 
                 Button(role: .destructive) {
                     purgeIconCache()
                 } label: {
-                    Label("Purge & Rebuild Icon Cache", systemImage: "arrow.counterclockwise")
+                    Label("Xóa & Làm mới Icon Cache Hệ thống", systemImage: "arrow.counterclockwise")
                 }
             } header: {
-                HeaderLabel("Safari & SystemGroup Icon Cache", symbol: "cube.transparent")
+                HeaderLabel("Safari & Bộ nhớ đệm Biểu tượng", symbol: "cube.transparent")
             }
         }
         .navigationTitle("Theme Studio")
@@ -260,7 +257,7 @@ struct ThemeStudioView: View {
             }
         )
         .alert(statusAlertTitle, isPresented: $showStatusAlert) {
-            Button("OK", role: .cancel) {}
+            Button("Đóng", role: .cancel) {}
         } message: {
             Text(statusAlertBody)
         }
@@ -273,14 +270,12 @@ struct ThemeStudioView: View {
         isScanning = true
         
         DispatchQueue.global(qos: .userInitiated).async {
-            // 1. Check Icon Cache in SystemGroup
             _ = wq_grant(lsdIconsCacheRoot)
             let icBytes = wq_dir_size(lsdIconsCacheRoot)
             let subIconsDir = (lsdIconsCacheRoot as NSString).appendingPathComponent("com.apple.IconsCache")
             _ = wq_grant(subIconsDir)
             let icFiles = wq_list(subIconsDir, nil)?.count ?? (wq_list(lsdIconsCacheRoot, nil)?.count ?? 0)
             
-            // 2. Discover Application Containers (PosterBoard, Passbook, MobileSafari)
             var foundPoster = ""
             var foundPassbook = ""
             var foundSafari = ""
@@ -303,7 +298,6 @@ struct ThemeStudioView: View {
                 }
             }
             
-            // 3. Scan PosterBoard Extension Providers
             var discoveredProviders: [PosterProviderItem] = []
             if !foundPoster.isEmpty {
                 let storeRoot = (foundPoster as NSString).appendingPathComponent("Library/Application Support/PRBPosterExtensionDataStore")
@@ -330,7 +324,6 @@ struct ThemeStudioView: View {
                 }
             }
             
-            // 4. Scan Passbook Card Art PNGs
             var discoveredCards: [WalletCardAsset] = []
             if !foundPassbook.isEmpty {
                 _ = wq_grant(foundPassbook)
@@ -375,21 +368,21 @@ struct ThemeStudioView: View {
     
     private func applyWalletCardImage(_ imageData: Data, to asset: WalletCardAsset) {
         guard let uiImage = UIImage(data: imageData), let pngData = uiImage.pngData() else {
-            statusAlertTitle = "Invalid Image"
-            statusAlertBody = "Could not convert selected image to PNG."
+            statusAlertTitle = "Ảnh không hợp lệ"
+            statusAlertBody = "Không thể chuyển đổi ảnh đã chọn sang định dạng PNG."
             showStatusAlert = true
             return
         }
         var err: NSString?
         if wq_write(asset.fullPath, pngData, &err) {
             Haptic.shared.play(.soft)
-            statusAlertTitle = "Card Skin Applied!"
-            statusAlertBody = "Overwrote \(asset.imageName) in \(asset.passFolderName). Original image was backed up to Documents/Backups."
+            statusAlertTitle = "Đã đổi Skin Thẻ!"
+            statusAlertBody = "Đã ghi đè \(asset.imageName) trong \(asset.passFolderName). Ảnh gốc đã được sao lưu vào Documents/Backups."
             showStatusAlert = true
             scanThemeContainers()
         } else {
-            statusAlertTitle = "Failed to Write Card Skin"
-            statusAlertBody = (err as String?) ?? "Could not write to \(asset.fullPath)."
+            statusAlertTitle = "Lỗi ghi ảnh thẻ"
+            statusAlertBody = (err as String?) ?? "Không thể ghi vào \(asset.fullPath)."
             showStatusAlert = true
         }
     }
@@ -401,8 +394,8 @@ struct ThemeStudioView: View {
             _ = wq_purge_contents(lsdIconsCacheRoot, &freed)
             DispatchQueue.main.async {
                 Haptic.shared.play(.heavy)
-                self.statusAlertTitle = "Icon Cache Purged"
-                self.statusAlertBody = "Cleared \(wq_size_text(freed)) from systemgroup.com.apple.lsd.iconscache. Respring from Home to rebuild icons."
+                self.statusAlertTitle = "Đã xóa Icon Cache"
+                self.statusAlertBody = "Đã giải phóng \(wq_size_text(freed)) từ systemgroup.com.apple.lsd.iconscache. Hãy Respring để làm mới biểu tượng."
                 self.showStatusAlert = true
                 self.scanThemeContainers()
             }

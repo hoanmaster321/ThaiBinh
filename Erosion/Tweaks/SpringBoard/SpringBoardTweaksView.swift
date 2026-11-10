@@ -1,13 +1,9 @@
 //
 //  SpringBoardTweaksView.swift
-//  ErosionWQ
+//  ThaiBinh (ErosionWQ)
 //
 //  SpringBoard, Lock Screen, PosterBoard & SystemGroup Studio
-//  Strictly uses MCM container paths supported by worse_query:
-//  - /var/containers/Shared/SystemGroup/*
-//  - /var/mobile/Containers/Data/Application/* (com.apple.PosterBoard, com.apple.mobilephone, etc.)
-//  - /var/mobile/Containers/Data/PluginKitPlugin/*
-//  - /var/mobile/Containers/Shared/AppGroup/*
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -50,44 +46,44 @@ struct SpringBoardTweaksView: View {
             // MARK: - 1. Lock Screen Banner & Asset Tag (SystemGroup configurationprofiles)
             Section {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Lock Screen Bottom Footnote")
+                    Text("Chữ hiển thị dưới đáy Màn hình khóa (Footnote)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    TextField("Custom Lock Screen Text...", text: $lockScreenFootnote)
+                    TextField("Nhập dòng chữ tùy chỉnh...", text: $lockScreenFootnote)
                 }
                 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Lock Screen Asset Tag (Device Info)")
+                    Text("Nhãn tài sản thiết bị (Asset Tag)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    TextField("e.g. Property of ThaiBinh...", text: $assetTagText)
+                    TextField("Ví dụ: Thiết bị của ThaiBinh...", text: $assetTagText)
                 }
             } header: {
-                HeaderLabel("Lock Screen Text (SystemGroup)", symbol: "lock.iphone")
+                HeaderLabel("Văn bản Màn hình khóa (SystemGroup)", symbol: "lock.iphone")
             } footer: {
-                Text("Writes to /var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/SharedDeviceConfiguration.plist.")
+                Text("Ghi trực tiếp vào /var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/SharedDeviceConfiguration.plist.")
             }
             
             // MARK: - 2. SpringBoard & Camera Flags (SystemGroup mobilegestaltcache)
             Section {
-                Toggle("Mute Camera Shutter Sound (JP/KR)", isOn: $disableShutterSound)
-                PlainToggle("Dynamic Island UI", minVrs: 19.0, isOn: store.mgKeyBinding([MGKey.island]))
-                PlainToggle("Always On Display (AOD)", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.AOD, MGKey.AOTime]))
-                PlainToggle("Action Button UI in Settings", minVrs: 17.0, isOn: store.mgKeyBinding([MGKey.actButton]))
-                PlainToggle("Camera Control Button UI", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.camButton, MGKey.grapPefr]))
-                PlainToggle("Tap to Wake (SE / Home Button)", isOn: store.mgKeyBinding([MGKey.tapToWake]))
+                Toggle("Tắt âm chụp ảnh Camera (Máy Nhật/Hàn)", isOn: $disableShutterSound)
+                PlainToggle("Kích hoạt Dynamic Island", minVrs: 19.0, isOn: store.mgKeyBinding([MGKey.island]))
+                PlainToggle("Màn hình luôn bật (Always On Display)", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.AOD, MGKey.AOTime]))
+                PlainToggle("Menu Nút Tác Vụ (Action Button UI)", minVrs: 17.0, isOn: store.mgKeyBinding([MGKey.actButton]))
+                PlainToggle("Menu Điều khiển Camera (Camera Control)", minVrs: 18.0, isOn: store.mgKeyBinding([MGKey.camButton, MGKey.grapPefr]))
+                PlainToggle("Chạm để bật màn hình (Tap to Wake - SE)", isOn: store.mgKeyBinding([MGKey.tapToWake]))
             } header: {
-                HeaderLabel("SpringBoard Hardware Capabilities", symbol: "sparkles.rectangle.stack")
+                HeaderLabel("Tính năng SpringBoard & Phần cứng", symbol: "sparkles.rectangle.stack")
             } footer: {
-                Text("Writes to /var/containers/Shared/SystemGroup/systemgroup.com.apple.mobilegestaltcache/Library/Caches/com.apple.MobileGestalt.plist.")
+                Text("Can thiệp trực tiếp vào /var/containers/Shared/SystemGroup/systemgroup.com.apple.mobilegestaltcache/Library/Caches/com.apple.MobileGestalt.plist.")
             }
             
-            // MARK: - 3. PosterBoard Lock Screen & Wallpaper Container (/var/mobile/Containers/Data/Application)
+            // MARK: - 3. PosterBoard Lock Screen & Wallpaper Container
             Section {
                 HStack {
-                    Label("PosterBoard Container", systemImage: "photo.on.rectangle.angled")
+                    Label("Container PosterBoard", systemImage: "photo.on.rectangle.angled")
                     Spacer()
-                    Text(posterBoardContainer.isEmpty ? "Not Scanned" : "Found")
+                    Text(posterBoardContainer.isEmpty ? "Chưa quét" : "Đã kết nối")
                         .font(.caption)
                         .foregroundStyle(posterBoardContainer.isEmpty ? Color.secondary : Color.green)
                 }
@@ -96,14 +92,14 @@ struct SpringBoardTweaksView: View {
                     Button {
                         backupPosterBoardData()
                     } label: {
-                        Label("Back Up All Lock Screen Posters", systemImage: "externaldrive.badge.timemachine")
+                        Label("Sao lưu toàn bộ Màn hình khóa (Posters)", systemImage: "externaldrive.badge.timemachine")
                     }
                     
                     if hasPosterBackup {
                         Button {
                             restorePosterBoardData()
                         } label: {
-                            Label("Restore Saved Lock Screen Posters", systemImage: "arrow.uturn.backward.circle.fill")
+                            Label("Khôi phục Màn hình khóa đã lưu", systemImage: "arrow.uturn.backward.circle.fill")
                                 .foregroundStyle(.green)
                         }
                     }
@@ -114,25 +110,25 @@ struct SpringBoardTweaksView: View {
                         inspectPlistURL = URL(fileURLWithPath: prefsPath)
                         showPlistSheet = true
                     } label: {
-                        Label("Edit com.apple.PosterBoard.plist", systemImage: "tablecells")
+                        Label("Sửa tệp com.apple.PosterBoard.plist", systemImage: "tablecells")
                     }
                     
                     Button {
                         browseContainerURL = URL(fileURLWithPath: posterBoardContainer)
                     } label: {
-                        Label("Browse PosterBoard Container", systemImage: "folder")
+                        Label("Duyệt thư mục PosterBoard", systemImage: "folder")
                     }
                 } else {
                     Button {
                         locatePosterBoard()
                     } label: {
-                        Label("Locate com.apple.PosterBoard Container", systemImage: "magnifyingglass")
+                        Label("Dò tìm Container com.apple.PosterBoard", systemImage: "magnifyingglass")
                     }
                 }
             } header: {
-                HeaderLabel("PosterBoard Lock Screen Data", symbol: "wand.and.stars")
+                HeaderLabel("Dữ liệu Màn hình khóa (PosterBoard)", symbol: "wand.and.stars")
             } footer: {
-                Text("Accesses com.apple.PosterBoard inside /var/mobile/Containers/Data/Application/* to back up, restore, or edit Lock Screen wallpaper descriptors.")
+                Text("Truy cập com.apple.PosterBoard trong /var/mobile/Containers/Data/Application/* để sao lưu, khôi phục hoặc chỉnh sửa hình nền khóa.")
             }
             
             // MARK: - 4. SystemGroup Icon Cache & SpringBoard Shared Settings
@@ -140,7 +136,7 @@ struct SpringBoardTweaksView: View {
                 Button {
                     rebuildIconCache()
                 } label: {
-                    Label("Purge & Rebuild Icon Cache (lsd.iconscache)", systemImage: "square.grid.2x2.fill")
+                    Label("Xóa & Làm mới Icon Cache (lsd.iconscache)", systemImage: "square.grid.2x2.fill")
                         .foregroundStyle(.orange)
                 }
                 
@@ -148,7 +144,7 @@ struct SpringBoardTweaksView: View {
                     _ = wq_grant(sbSharedSettingsDir)
                     browseContainerURL = URL(fileURLWithPath: sbSharedSettingsDir)
                 } label: {
-                    Label("Browse SpringBoard.sharedsettings", systemImage: "folder.badge.gearshape")
+                    Label("Mở thư mục SpringBoard.sharedsettings", systemImage: "folder.badge.gearshape")
                 }
                 
                 Button {
@@ -156,19 +152,19 @@ struct SpringBoardTweaksView: View {
                     inspectPlistURL = URL(fileURLWithPath: sharedDevConfigPath)
                     showPlistSheet = true
                 } label: {
-                    Label("Edit SharedDeviceConfiguration.plist", systemImage: "doc.text")
+                    Label("Sửa tệp SharedDeviceConfiguration.plist", systemImage: "doc.text")
                 }
             } header: {
-                HeaderLabel("SystemGroup Maintenance", symbol: "wrench.and.screwdriver")
+                HeaderLabel("Bảo trì SystemGroup", symbol: "wrench.and.screwdriver")
             } footer: {
-                Text("Purges /var/containers/Shared/SystemGroup/systemgroup.com.apple.lsd.iconscache/Library/Caches so SpringBoard rebuilds app icons on next respring.")
+                Text("Xóa bộ nhớ đệm trong /var/containers/Shared/SystemGroup/systemgroup.com.apple.lsd.iconscache/Library/Caches để SpringBoard tạo lại icon khi Respring.")
             }
         }
         .navigationTitle("SpringBoard Studio")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Apply", role: .adaptiveConfirm) {
+                Button("Áp dụng", role: .adaptiveConfirm) {
                     applyAll()
                 }
             }
@@ -198,10 +194,10 @@ struct SpringBoardTweaksView: View {
             }
         )
         .alert("SpringBoard Studio", isPresented: $showStatusAlert) {
-            Button("Respring Now") {
+            Button("Respring ngay") {
                 mgr.shouldRespring = true
             }
-            Button("Later", role: .cancel) {}
+            Button("Để sau", role: .cancel) {}
         } message: {
             Text(statusMessage)
         }
@@ -211,7 +207,10 @@ struct SpringBoardTweaksView: View {
     
     private func loadCurrentSettings() {
         _ = wq_grant(MGURL.fsGestaltURL.deletingLastPathComponent().path)
-        if let dict = NSMutableDictionary(contentsOf: MGURL.fsGestaltURL) {
+        if let data = readDataWithWQ(MGURL.fsGestaltURL),
+           let dict = (try? PropertyListSerialization.propertyList(from: data, options: .mutableContainersAndLeaves, format: nil)) as? NSMutableDictionary {
+            store.mgCurrentDict = dict
+        } else if let dict = NSMutableDictionary(contentsOf: MGURL.fsGestaltURL) {
             store.mgCurrentDict = dict
         }
         if let val = store.cacheExtra[shutterClickKey] as? Int, val == 0 {
@@ -229,7 +228,6 @@ struct SpringBoardTweaksView: View {
     }
     
     private func locatePosterBoard() {
-        // First check if WQEngine already scanned it
         if let match = WQEngine.shared.apps.first(where: { $0.bundleID == "com.apple.PosterBoard" }) {
             posterBoardContainer = match.containerPath
             checkPosterBackup()
@@ -261,9 +259,9 @@ struct SpringBoardTweaksView: View {
                 self.checkPosterBackup()
                 if ok {
                     Haptic.shared.play(.soft)
-                    Alertinator.shared.alert(title: "PosterBoard Backed Up", body: "Saved Lock Screen posters snapshot to AppBackups/com.apple.PosterBoard/\(stampDir?.lastPathComponent ?? "").")
+                    Alertinator.shared.alert(title: "Đã sao lưu PosterBoard", body: "Đã lưu snapshot màn hình khóa vào AppBackups/com.apple.PosterBoard/\(stampDir?.lastPathComponent ?? "").")
                 } else {
-                    Alertinator.shared.alert(title: "Backup Failed", body: (err as String?) ?? "Could not back up PosterBoard.")
+                    Alertinator.shared.alert(title: "Sao lưu thất bại", body: (err as String?) ?? "Không thể sao lưu PosterBoard.")
                 }
             }
         }
@@ -277,10 +275,10 @@ struct SpringBoardTweaksView: View {
             DispatchQueue.main.async {
                 if ok {
                     Haptic.shared.play(.soft)
-                    self.statusMessage = "Restored PosterBoard Lock Screen wallpapers! Respring now to reload Lock Screen."
+                    self.statusMessage = "Đã khôi phục cấu hình hình nền khóa PosterBoard! Hãy Respring ngay để áp dụng."
                     self.showStatusAlert = true
                 } else {
-                    Alertinator.shared.alert(title: "Restore Failed", body: (err as String?) ?? "Could not restore PosterBoard.")
+                    Alertinator.shared.alert(title: "Khôi phục thất bại", body: (err as String?) ?? "Không thể khôi phục PosterBoard.")
                 }
             }
         }
@@ -293,14 +291,13 @@ struct SpringBoardTweaksView: View {
             let _ = wq_purge_contents(lsdIconsCacheDir, &freed)
             DispatchQueue.main.async {
                 Haptic.shared.play(.heavy)
-                self.statusMessage = "Purged \(wq_size_text(freed)) from systemgroup.com.apple.lsd.iconscache. Respring now to rebuild SpringBoard icons."
+                self.statusMessage = "Đã dọn \(wq_size_text(freed)) từ systemgroup.com.apple.lsd.iconscache. Hãy Respring để làm mới icon."
                 self.showStatusAlert = true
             }
         }
     }
     
     private func applyAll() {
-        // 1. Update SharedDeviceConfiguration.plist in systemgroup.com.apple.configurationprofiles
         _ = wq_grant(configProfilesDir)
         var configDict: [String: Any] = [:]
         if let existing = wq_read(sharedDevConfigPath, 0, nil),
@@ -320,7 +317,6 @@ struct SpringBoardTweaksView: View {
             }
         }
         
-        // 2. Update MobileGestalt in systemgroup.com.apple.mobilegestaltcache
         if disableShutterSound {
             store.cacheExtra[shutterClickKey] = 0
             store.cacheExtra[MGKey.regionCode] = "LL"
@@ -329,7 +325,7 @@ struct SpringBoardTweaksView: View {
             store.cacheExtra.removeObject(forKey: shutterClickKey)
         }
         store.mgCurrentDict["CacheExtra"] = store.cacheExtra
-        if let mgData = try? PropertyListSerialization.data(fromPropertyList: store.mgCurrentDict, format: .xml, options: 0) {
+        if let mgData = try? PropertyListSerialization.data(fromPropertyList: store.mgCurrentDict, format: .binary, options: 0) {
             _ = mgWrite(mgData)
         }
         
@@ -337,7 +333,7 @@ struct SpringBoardTweaksView: View {
         if autoRespring {
             mgr.shouldRespring = true
         } else {
-            statusMessage = "Applied SpringBoard & SystemGroup tweaks successfully! Respring to see changes."
+            statusMessage = "Đã áp dụng tinh chỉnh SpringBoard & SystemGroup thành công! Hãy Respring để thấy thay đổi."
             showStatusAlert = true
         }
     }

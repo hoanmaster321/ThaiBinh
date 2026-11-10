@@ -63,7 +63,7 @@ struct FileRow: View {
                                     .foregroundStyle(.secondary)
                             }
                             if let orig = backupOriginalPath {
-                                Text("Backup of \(orig)")
+                                Text("Sao lưu từ: \(orig)")
                                     .font(.caption2)
                                     .foregroundStyle(.blue)
                                     .lineLimit(1)
@@ -142,13 +142,13 @@ struct FileRow: View {
                         var err: NSString?
                         if wq_write(origPath, data, &err) {
                             Haptic.shared.play(.soft)
-                            Alertinator.shared.alert(title: "Restored Successfully", body: "Restored file to:\n\(origPath)")
+                            Alertinator.shared.alert(title: "Khôi phục thành công", body: "Đã khôi phục tệp về đường dẫn gốc:\n\(origPath)")
                         } else {
-                            Alertinator.shared.alert(title: "Restore Failed", body: (err as String?) ?? "Could not write to original location.")
+                            Alertinator.shared.alert(title: "Khôi phục thất bại", body: (err as String?) ?? "Không thể ghi vào đường dẫn gốc.")
                         }
                     }
                 } label: {
-                    Label("Restore to Original Path", systemImage: "arrow.uturn.backward.circle.fill")
+                    Label("Khôi phục về đường dẫn gốc", systemImage: "arrow.uturn.backward.circle.fill")
                 }
                 Divider()
             }
@@ -156,7 +156,7 @@ struct FileRow: View {
             Button {
                 showHexViewer = true
             } label: {
-                Label("Hex Viewer", systemImage: "curlybraces")
+                Label("Xem mã Hex", systemImage: "curlybraces")
             }
             
             if conformsText || conformsPlist {
@@ -164,14 +164,14 @@ struct FileRow: View {
                     Button {
                         previewURL = file.fileURL
                     } label: {
-                        Label("Quick Look", systemImage: "eye")
+                        Label("Xem nhanh (Quick Look)", systemImage: "eye")
                     }
                     
                     if conformsPlist {
                         Button {
                             showPlistViewer.toggle()
                         } label: {
-                            Label("Plist Viewer", systemImage: "tablecells")
+                            Label("Trình sửa Plist", systemImage: "tablecells")
                         }
                     }
                     
@@ -179,17 +179,17 @@ struct FileRow: View {
                         Button {
                             showTextViewer.toggle()
                         } label: {
-                            Label("Text Viewer", systemImage: "doc.plaintext")
+                            Label("Trình sửa Văn bản", systemImage: "doc.plaintext")
                         }
                     }
                 } label: {
-                    Label("View In...", systemImage: "doc.text.magnifyingglass")
+                    Label("Mở bằng...", systemImage: "doc.text.magnifyingglass")
                 }
             } else {
                 Button {
                     previewURL = file.fileURL
                 } label: {
-                    Label("Quick Look", systemImage: "eye")
+                    Label("Xem nhanh (Quick Look)", systemImage: "eye")
                 }
             }
             
@@ -198,23 +198,23 @@ struct FileRow: View {
             Button {
                 showInfo.toggle()
             } label: {
-                Label("Get Info", systemImage: "info.circle")
+                Label("Xem thông tin", systemImage: "info.circle")
             }
             
             if file.type == .file {
                 Button {
-                    Alertinator.shared.prompt(title: "What would you like to call this file?", placeholder: file.name, completion: { result in
+                    Alertinator.shared.prompt(title: "Nhập tên mới cho tệp này:", placeholder: file.name, completion: { result in
                         if let name = result {
                             let res = renameFile(file.fileURL, to: name)
                             if res {
                                 mgr.refreshFiles.toggle()
                             } else {
-                                Alertinator.shared.alert(title: "Failed to rename file!", body: Errors.checkLogs)
+                                Alertinator.shared.alert(title: "Không thể đổi tên tệp!", body: Errors.checkLogs)
                             }
                         }
                     })
                 } label: {
-                    Label("Rename", systemImage: "pencil")
+                    Label("Đổi tên", systemImage: "pencil")
                 }
             }
             
@@ -225,10 +225,10 @@ struct FileRow: View {
                         if res {
                             mgr.refreshFiles.toggle()
                         } else {
-                            Alertinator.shared.alert(title: "Failed to uncompress file!", body: Errors.checkLogs)
+                            Alertinator.shared.alert(title: "Giải nén thất bại!", body: Errors.checkLogs)
                         }
                     } label: {
-                        Label("Uncompress", systemImage: "archivebox")
+                        Label("Giải nén", systemImage: "archivebox")
                     }
                 } else {
                     Button {
@@ -236,10 +236,10 @@ struct FileRow: View {
                         if res {
                             mgr.refreshFiles.toggle()
                         } else {
-                            Alertinator.shared.alert(title: "Failed to compress file!", body: Errors.checkLogs)
+                            Alertinator.shared.alert(title: "Nén tệp thất bại!", body: Errors.checkLogs)
                         }
                     } label: {
-                        Label("Compress", systemImage: "archivebox")
+                        Label("Nén ZIP", systemImage: "archivebox")
                     }
                 }
             }
@@ -250,10 +250,10 @@ struct FileRow: View {
                     if res {
                         mgr.refreshFiles.toggle()
                     } else {
-                        Alertinator.shared.alert(title: "Failed to duplicate file!", body: Errors.checkLogs)
+                        Alertinator.shared.alert(title: "Không thể nhân bản tệp!", body: Errors.checkLogs)
                     }
                 } label: {
-                    Label("Duplicate", systemImage: "plus.square.on.square")
+                    Label("Nhân bản", systemImage: "plus.square.on.square")
                 }
             }
             
@@ -262,10 +262,10 @@ struct FileRow: View {
             Button {
                 let res = copyFileToClipboard(file.fileURL)
                 if !res {
-                    Alertinator.shared.alert(title: "Failed to copy file!", body: Errors.checkLogs)
+                    Alertinator.shared.alert(title: "Không thể sao chép tệp!", body: Errors.checkLogs)
                 }
             } label: {
-                Label("Copy", systemImage: "doc.on.doc")
+                Label("Sao chép", systemImage: "doc.on.doc")
             }
             
             Button {
@@ -273,7 +273,7 @@ struct FileRow: View {
                     presentShareSheet(with: url)
                 }
             } label: {
-                Label("Share", systemImage: "square.and.arrow.up")
+                Label("Chia sẻ", systemImage: "square.and.arrow.up")
             }
             
             Divider()
@@ -288,11 +288,11 @@ struct FileRow: View {
                         mgr.refreshFiles.toggle()
                     } catch {
                         print("(fm) failed to delete file: \(error.localizedDescription)")
-                        Alertinator.shared.alert(title: "Failed to delete file!", body: error.localizedDescription)
+                        Alertinator.shared.alert(title: "Không thể xóa tệp!", body: error.localizedDescription)
                     }
                 }
             } label: {
-                Label("Delete (Safe Backup)", systemImage: "trash")
+                Label("Xóa (Tự động Sao lưu)", systemImage: "trash")
             }
         }
     }

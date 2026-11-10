@@ -16,23 +16,23 @@ enum MGURL {
 
 enum MGMsg {
     // warnings
-    static let region = "Enabling this tweak may break regional laws! You could face legal action from your local jurisdiction. Use at your own risk."
-    static let ipadOS = "If you're using an alphanumeric passcode, do not use this tweak at all. Do not turn off \"Show Dock In Stage Manager\" or your device will get softbricked. When this tweak is enabled, expect general instability, unusable apps, and broken device features."
-    static let support = "Do not ask us for support if a tweak does not work properly. Many of these tweaks are dependent on your device or Apple's servers cooperating. Use all of these tweaks at your own risk."
-    static let mgReset = "Resetting MobileGestalt involves deleting the original cache. This'll help you remove tweaks that aren't reverting, but there is a rare chance that your device will get softbricked."
+    static let region = "Bật tinh chỉnh này có thể thay đổi mã vùng thiết bị (LL/A). Hãy tự chịu trách nhiệm khi sử dụng."
+    static let ipadOS = "Nếu đang dùng mật khẩu chữ và số, KHÔNG bật tinh chỉnh này. Không tắt \"Hiển thị Dock trong Stage Manager\" để tránh treo máy. Khi bật chế độ iPadOS, một số ứng dụng có thể hiển thị không ổn định."
+    static let support = "Một số tinh chỉnh phụ thuộc vào dòng máy hoặc máy chủ Apple. Hãy sao lưu trước khi áp dụng."
+    static let mgReset = "Đặt lại MobileGestalt sẽ xóa bộ nhớ đệm hiện tại để hệ thống tự tạo lại khi khởi động lại máy."
     
     // info
-    static let intInstall = "This will enable some internal features that were meant for Apple Internal use but were left in production iOS. This tweak may break some device functionality, including installing system apps from the App Store."
-    static let intBuild = "This toggle primarily adds internal storage info in the Settings application. This tweak may cause issues, especially on iPadOS."
-    static let spoofUseless = "Spoofing your device model may break Face ID as well as other features. This tweak won't be of any value to you as your device already supports Apple Intelligence."
-    static let spoofAI = "This tweak does not enable the new Siri AI features. To download AI models, you'll need to spoof your device. Spoofing your device model may break Face ID as well as other features. If you unspoof, do not go back into the Siri section inside of Settings."
-    static let subtype = "Only change your subtype if you'd like to move the Dynamic Island down to a lower position. Enable the Dynamic Island using the toggle further down this page!"
-    static let mgResetComp = "To complete the reset, you'll need to reboot your iPhone. Please do this now."
-    static let revertComp = "It's recommended that you reboot so that all tweaks can revert."
+    static let intInstall = "Bật một số tính năng nội bộ của Apple có sẵn trên iOS chính thức. Có thể ảnh hưởng việc tải ứng dụng hệ thống từ App Store."
+    static let intBuild = "Hiển thị thêm thông tin dung lượng nội bộ trong ứng dụng Cài đặt."
+    static let spoofUseless = "Giả lập mã máy có thể ảnh hưởng Face ID. Thiết bị của bạn vốn đã hỗ trợ Apple Intelligence."
+    static let spoofAI = "Để tải mô hình AI, bạn cần giả lập mã thiết bị hỗ trợ. Lưu ý giả lập mã máy có thể làm tạm ngưng Face ID cho tới khi hoàn tác."
+    static let subtype = "Chỉ thay đổi Subtype nếu bạn muốn điều chỉnh vị trí Dynamic Island. Hãy bật Dynamic Island ở bên dưới trước!"
+    static let mgResetComp = "Để hoàn tất đặt lại MobileGestalt, vui lòng khởi động lại iPhone ngay bây giờ."
+    static let revertComp = "Khuyến nghị khởi động lại thiết bị để mọi thay đổi được hoàn tác hoàn toàn."
 
     // settings
-    static let mgResetSavWarn = "Before you save MobileGestalt, remove all tweaks so that they don't get re-applied if you ever want to reset your actual gestalt again."
-    static let hidTweakWarn = "By showing tweaks that are intentionally hidden on your specific device configuration, you may be able to enable features that could break your device or lead to data loss!"
+    static let mgResetSavWarn = "Trước khi lưu bản gốc MobileGestalt, hãy tắt các tinh chỉnh đang bật để bản sao lưu giữ nguyên trạng thái gốc."
+    static let hidTweakWarn = "Khi hiển thị các tinh chỉnh bị ẩn theo cấu hình máy, hãy cẩn thận khi bật các tính năng không tương thích!"
 }
 
 enum MGKey {

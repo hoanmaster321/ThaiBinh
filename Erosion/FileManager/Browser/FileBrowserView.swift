@@ -17,11 +17,11 @@ enum FileSortMode: String, CaseIterable, Codable, Hashable {
     
     var label: String {
         switch self {
-        case .system: return "Default"
-        case .name: return "Name"
-        case .date: return "Date"
-        case .type: return "Type"
-        case .size: return "Size"
+        case .system: return "Mặc định"
+        case .name: return "Tên"
+        case .date: return "Ngày sửa"
+        case .type: return "Loại"
+        case .size: return "Kích thước"
         }
     }
 }
@@ -57,18 +57,18 @@ struct FileBrowserView: View {
                         HStack {
                             ProgressView()
                                 .offset(y: 0.5)
-                            Text("Loading Files...")
+                            Text("Đang tải danh sách tệp...")
                                 .fontWeight(.medium)
                         }
                         if isContainer {
-                            Text("Fast scanning container directories...")
+                            Text("Đang quét nhanh thư mục container...")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
             } else if showFailure {
-                CompactAlert(title: "Failed to load files from directory!", symbol: "folder.badge.questionmark", text: failMsg)
+                CompactAlert(title: "Không thể tải tệp từ thư mục!", symbol: "folder.badge.questionmark", text: failMsg)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             } else {
@@ -107,14 +107,14 @@ struct FileBrowserView: View {
                         filesAscend.toggle()
                     } label: {
                         if filesAscend {
-                            Label("Ascending", systemImage: "chevron.up")
+                            Label("Tăng dần", systemImage: "chevron.up")
                         } else {
-                            Label("Descending", systemImage: "chevron.down")
+                            Label("Giảm dần", systemImage: "chevron.down")
                         }
                     }
                     .disabled(chosenSort == .system)
                 } label: {
-                    Label("Sort", systemImage: "line.3.horizontal.decrease")
+                    Label("Sắp xếp", systemImage: "line.3.horizontal.decrease")
                 }
                 .labelStyle(.iconOnly)
             }
@@ -123,7 +123,7 @@ struct FileBrowserView: View {
                     if !isContainer {
                         Menu {
                             Button {
-                                Alertinator.shared.prompt(title: "What would you like to call your new file? Make sure you attach an extension at the end.", placeholder: "new.txt", completion: { name in
+                                Alertinator.shared.prompt(title: "Nhập tên cho tệp mới (kèm phần mở rộng):", placeholder: "new.txt", completion: { name in
                                     let name = name ?? ""
                                     if !name.isEmpty {
                                         let fileURL = path.appendingPathComponent(name)
@@ -136,17 +136,17 @@ struct FileBrowserView: View {
                                                 mgr.refreshFiles.toggle()
                                             } catch {
                                                 print("(fm) failed to create file: \(error.localizedDescription)")
-                                                Alertinator.shared.alert(title: "Failed to create file!", body: (err as String?) ?? error.localizedDescription)
+                                                Alertinator.shared.alert(title: "Không thể tạo tệp!", body: (err as String?) ?? error.localizedDescription)
                                             }
                                         }
                                     }
                                 })
                             } label: {
-                                Label("File", systemImage: "doc")
+                                Label("Tệp tin", systemImage: "doc")
                             }
                             
                             Button {
-                                Alertinator.shared.prompt(title: "What would you like to call your new property list?", placeholder: "Plist Name", completion: { name in
+                                Alertinator.shared.prompt(title: "Nhập tên cho tệp Property List mới:", placeholder: "Tên Plist", completion: { name in
                                     let name = name ?? ""
                                     if !name.isEmpty {
                                         do {
@@ -161,16 +161,16 @@ struct FileBrowserView: View {
                                             }
                                         } catch {
                                             print("(fm) failed to create plist: \(error.localizedDescription)")
-                                            Alertinator.shared.alert(title: "Failed to create property list!", body: error.localizedDescription)
+                                            Alertinator.shared.alert(title: "Không thể tạo tệp Plist!", body: error.localizedDescription)
                                         }
                                     }
                                 })
                             } label: {
-                                Label("Property List", systemImage: "tablecells")
+                                Label("Tệp Plist", systemImage: "tablecells")
                             }
                             
                             Button {
-                                Alertinator.shared.prompt(title: "What would you like to call your new folder?", placeholder: "Folder Name", completion: { name in
+                                Alertinator.shared.prompt(title: "Nhập tên cho thư mục mới:", placeholder: "Tên thư mục", completion: { name in
                                     let name = name ?? ""
                                     if !name.isEmpty {
                                         let folderURL = path.appendingPathComponent(name)
@@ -183,17 +183,17 @@ struct FileBrowserView: View {
                                                 mgr.refreshFiles.toggle()
                                             } catch {
                                                 print("(fm) failed to create folder: \(error.localizedDescription)")
-                                                Alertinator.shared.alert(title: "Failed to create folder!", body: (err as String?) ?? error.localizedDescription)
+                                                Alertinator.shared.alert(title: "Không thể tạo thư mục!", body: (err as String?) ?? error.localizedDescription)
                                             }
                                         }
                                     }
                                 })
                             } label: {
-                                Label("Folder", systemImage: "folder")
+                                Label("Thư mục", systemImage: "folder")
                             }
                             
                             Button {
-                                Alertinator.shared.prompt(title: "Where would you like your new symlink to point to?", placeholder: "/path/to/dir", completion: { symPath in
+                                Alertinator.shared.prompt(title: "Nhập đường dẫn đích cho liên kết tượng trưng (Symlink):", placeholder: "/path/to/dir", completion: { symPath in
                                     let symPath = symPath ?? ""
                                     if !symPath.isEmpty {
                                         do {
@@ -201,73 +201,73 @@ struct FileBrowserView: View {
                                             mgr.refreshFiles.toggle()
                                         } catch {
                                             print("(fm) failed to create symlink: \(error.localizedDescription)")
-                                            Alertinator.shared.alert(title: "Failed to create symlink!", body: "\(error.localizedDescription)")
+                                            Alertinator.shared.alert(title: "Không thể tạo Symlink!", body: "\(error.localizedDescription)")
                                         }
                                     }
                                 })
                             } label: {
-                                Label("Symlink", systemImage: "arrow.up.right.circle")
+                                Label("Liên kết (Symlink)", systemImage: "arrow.up.right.circle")
                             }
                         } label: {
-                            Label("New...", systemImage: "plus")
+                            Label("Tạo mới...", systemImage: "plus")
                         }
                         
                         Button {
                             showFileImporter.toggle()
                         } label: {
-                            Label("Import File", systemImage: "arrow.down.doc")
+                            Label("Nhập tệp từ bên ngoài", systemImage: "arrow.down.doc")
                         }
                         Divider()
                     }
                     NavigationLink {
                         FileBrowserView(path: URL.documentsDirectory)
                     } label: {
-                        Label("Open App Docs", systemImage: "folder")
+                        Label("Mở thư mục Documents", systemImage: "folder")
                     }
                     NavigationLink {
                         List {
                             Section {
                                 HStack {
-                                    Text("Max Inode")
+                                    Text("Số Inode tối đa")
                                     TextField("7500000", value: $maxInode, format: .number)
                                         .multilineTextAlignment(.trailing)
                                 }
                             } header: {
-                                HeaderLabel("Container Fetching", symbol: "externaldrive")
+                                HeaderLabel("Quét Container", symbol: "externaldrive")
                             } footer: {
-                                Text("This controls how quickly files can load. Lower values = faster fetching but less files.")
+                                Text("Điều chỉnh tốc độ quét container. Giá trị thấp hơn = quét nhanh hơn nhưng có thể bỏ sót tệp mới.")
                             }
                             
                             Section {
-                                Picker("List Style", selection: $listStyle) {
-                                    Text("Default").tag(1)
-                                    Text("Plain").tag(2)
-                                    Text("Grouped").tag(3)
+                                Picker("Kiểu danh sách", selection: $listStyle) {
+                                    Text("Mặc định").tag(1)
+                                    Text("Đơn giản").tag(2)
+                                    Text("Nhóm").tag(3)
                                 }
-                                Toggle("Hide Dates", isOn: $hideDates)
+                                Toggle("Ẩn ngày sửa đổi", isOn: $hideDates)
                             } header: {
-                                HeaderLabel("View Options", symbol: "eye")
+                                HeaderLabel("Tùy chọn hiển thị", symbol: "eye")
                             }
                             
                             Section {
                                 Stepper(value: $textViewerSize) {
                                     HStack {
-                                        Text("Text Size")
+                                        Text("Cỡ chữ")
                                         Spacer()
                                         Text(textViewerSize.description)
                                     }
                                 }
-                                Toggle("Monospaced Font", isOn: $useMonospaced)
+                                Toggle("Phông chữ Monospaced", isOn: $useMonospaced)
                             } header: {
-                                HeaderLabel("Text Viewer", symbol: "doc.plaintext")
+                                HeaderLabel("Trình xem văn bản", symbol: "doc.plaintext")
                             }
                         }
-                        .navigationTitle("File Browser Settings")
+                        .navigationTitle("Cài đặt Trình duyệt tệp")
                     } label: {
-                        Label("Settings", systemImage: "gearshape")
+                        Label("Cài đặt", systemImage: "gearshape")
                     }
                 } label: {
-                    Label("Actions", systemImage: "ellipsis")
+                    Label("Tác vụ", systemImage: "ellipsis")
                 }
                 .labelStyle(.iconOnly)
             }

@@ -1,17 +1,18 @@
 //
 //  AppsManagerView.swift
-//  ErosionWQ
+//  ThaiBinh (ErosionWQ)
 //
-//  App Data Manager: Backup, Restore, Multi-Snapshot Management, Clear & Browse App Containers
+//  Quản lý Dữ liệu Ứng dụng: Sao lưu, Khôi phục, Đa Snapshot, Nhập/Xuất ZIP, Sửa Plist & Xóa dữ liệu
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
 import UniformTypeIdentifiers
 
 enum AppSortMode: String, CaseIterable {
-    case size = "Size"
-    case name = "Name"
-    case backedUp = "Backed Up"
+    case size = "Dung lượng"
+    case name = "Tên ứng dụng"
+    case backedUp = "Đã sao lưu"
 }
 
 struct AppsManagerView: View {
@@ -68,9 +69,9 @@ struct AppsManagerView: View {
                         
                         HStack {
                             VStack(alignment: .leading) {
-                                Text("\(engine.apps.count) Applications")
+                                Text("\(engine.apps.count) Ứng dụng")
                                     .font(.headline)
-                                Text("\(wq_size_text(engine.totalAppDataBytes)) Total App Data")
+                                Text("Tổng dữ liệu: \(wq_size_text(engine.totalAppDataBytes))")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
@@ -101,11 +102,11 @@ struct AppsManagerView: View {
                     if engine.apps.isEmpty && engine.isScanningApps {
                         HStack {
                             ProgressView()
-                            Text("Enumerating containers...")
+                            Text("Đang quét danh sách container ứng dụng...")
                                 .padding(.leading, 8)
                         }
                     } else if filteredApps.isEmpty {
-                        Text(searchText.isEmpty ? "No apps discovered yet. Pull down to scan." : "No apps matching '\(searchText)'")
+                        Text(searchText.isEmpty ? "Chưa tìm thấy ứng dụng nào. Kéo xuống để quét lại." : "Không tìm thấy ứng dụng khớp '\(searchText)'")
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(filteredApps) { app in
@@ -134,7 +135,7 @@ struct AppsManagerView: View {
                                                 .foregroundStyle(.primary)
                                             
                                             if app.hasBackup {
-                                                Text(app.backupCount > 1 ? "BACKED UP (\(app.backupCount))" : "BACKED UP")
+                                                Text(app.backupCount > 1 ? "ĐÃ LƯU (\(app.backupCount))" : "ĐÃ LƯU")
                                                     .font(.system(size: 9, weight: .bold))
                                                     .padding(.horizontal, 5)
                                                     .padding(.vertical, 2)
@@ -159,21 +160,21 @@ struct AppsManagerView: View {
                         }
                     }
                 } header: {
-                    Text("Installed Apps (\(filteredApps.count))")
+                    Text("Danh sách Ứng dụng (\(filteredApps.count))")
                 }
             }
-            .navigationTitle("App Manager")
-            .searchable(text: $searchText, prompt: "Search by name or bundle id")
+            .navigationTitle("Quản lý Ứng dụng")
+            .searchable(text: $searchText, prompt: "Tìm theo tên hoặc Bundle ID")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Picker("Sort Apps", selection: $sortMode) {
+                        Picker("Sắp xếp", selection: $sortMode) {
                             ForEach(AppSortMode.allCases, id: \.self) { mode in
                                 Text(mode.rawValue).tag(mode)
                             }
                         }
                     } label: {
-                        Label("Sort", systemImage: "arrow.up.arrow.down.circle")
+                        Label("Sắp xếp", systemImage: "arrow.up.arrow.down.circle")
                     }
                 }
             }
@@ -185,10 +186,10 @@ struct AppsManagerView: View {
                     engine.scanApps()
                 }
             }
-            .confirmationDialog(selectedApp?.name ?? "App Actions", isPresented: $showActionSheet, presenting: selectedApp) { app in
-                Button("Back Up App Data (New Snapshot)") {
+            .confirmationDialog(selectedApp?.name ?? "Tác vụ Ứng dụng", isPresented: $showActionSheet, presenting: selectedApp) { app in
+                Button("Sao lưu Dữ liệu (Tạo Snapshot mới)") {
                     engine.backupApp(app) { success, msg in
-                        alertTitle = success ? "Backup Complete" : "Backup Failed"
+                        alertTitle = success ? "Sao lưu hoàn tất" : "Sao lưu thất bại"
                         alertMessage = msg
                         showAlert = true
                     }
@@ -196,15 +197,15 @@ struct AppsManagerView: View {
                 
                 if let latest = app.latestBackupPath {
                     let stamp = URL(fileURLWithPath: latest).lastPathComponent
-                    Button("Restore Latest (\(stamp))") {
+                    Button("Khôi phục bản mới nhất (\(stamp))") {
                         showConfirmRestore = true
                     }
                     
-                    Button("Manage Snapshots (\(app.backupCount))") {
+                    Button("Quản lý các bản Sao lưu (\(app.backupCount))") {
                         showSnapshotsSheet = true
                     }
                     
-                    Button("Share Latest Backup (ZIP)") {
+                    Button("Chia sẻ bản Sao lưu (ZIP)") {
                         if let rootVC = UIApplication.shared.connectedScenes
                             .compactMap({ ($0 as? UIWindowScene)?.keyWindow?.rootViewController }).first {
                             engine.shareBackup(app, from: rootVC, sourceView: nil)
@@ -212,33 +213,29 @@ struct AppsManagerView: View {
                     }
                 }
                 
-                Button("Manage Snapshots (\(app.backupCount))") {
-                    showSnapshotsSheet = true
-                }
-                
-                Button("Import Backup (.zip)") {
+                Button("Nhập bản Sao lưu từ tệp (.zip)") {
                     showImportZip = true
                 }
                 
-                Button("Edit App Preferences (.plist)") {
+                Button("Sửa Cài đặt Ứng dụng (.plist)") {
                     openAppPreferences(for: app)
                 }
                 
-                Button("Open App Documents") {
+                Button("Mở thư mục Documents của App") {
                     navigateToContainerPath = (app.containerPath as NSString).appendingPathComponent("Documents")
                 }
                 
-                Button("Open Container in File Browser") {
+                Button("Mở Container trong Trình duyệt Tệp") {
                     navigateToContainerPath = app.containerPath
                 }
                 
-                Button("Clear App Data", role: .destructive) {
+                Button("Xóa sạch Dữ liệu Ứng dụng", role: .destructive) {
                     showConfirmClear = true
                 }
                 
-                Button("Cancel", role: .cancel) {}
+                Button("Hủy", role: .cancel) {}
             } message: { app in
-                Text("\(app.bundleID)\n\(app.formattedBytes) of data")
+                Text("\(app.bundleID)\nDung lượng dữ liệu: \(app.formattedBytes)")
             }
             .sheet(isPresented: $showSnapshotsSheet) {
                 if let app = selectedApp {
@@ -255,24 +252,24 @@ struct AppsManagerView: View {
                     switch result {
                     case .success(let zipURL):
                         engine.importBackupZip(for: app, from: zipURL) { ok, msg in
-                            alertTitle = ok ? "Backup Imported" : "Import Failed"
+                            alertTitle = ok ? "Đã nhập bản Sao lưu" : "Nhập thất bại"
                             alertMessage = msg
                             showAlert = true
                         }
                     case .failure(let err):
-                        alertTitle = "Import Failed"
+                        alertTitle = "Nhập thất bại"
                         alertMessage = err.localizedDescription
                         showAlert = true
                     }
                 }
             }
-            .alert("Clear \(selectedApp?.name ?? "App")?", isPresented: $showConfirmClear) {
-                Button("Back Up First, Then Clear", role: .destructive) {
+            .alert("Xóa dữ liệu \(selectedApp?.name ?? "Ứng dụng")?", isPresented: $showConfirmClear) {
+                Button("Sao lưu trước, sau đó Xóa", role: .destructive) {
                     if let app = selectedApp {
                         engine.backupApp(app) { ok, _ in
                             if ok {
                                 engine.clearAppData(app) { _, msg in
-                                    alertTitle = "Cleared"
+                                    alertTitle = "Đã xóa dữ liệu"
                                     alertMessage = msg
                                     showAlert = true
                                 }
@@ -280,35 +277,35 @@ struct AppsManagerView: View {
                         }
                     }
                 }
-                Button("Clear Without Backup", role: .destructive) {
+                Button("Xóa ngay (Không sao lưu)", role: .destructive) {
                     if let app = selectedApp {
                         engine.clearAppData(app) { _, msg in
-                            alertTitle = "Cleared"
+                            alertTitle = "Đã xóa dữ liệu"
                             alertMessage = msg
                             showAlert = true
                         }
                     }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("Hủy", role: .cancel) {}
             } message: {
-                Text("Deletes Documents, Library, and tmp folders. Logins, offline cache, and settings will be removed. Make sure the app is closed.")
+                Text("Thao tác này sẽ xóa toàn bộ thư mục Documents, Library và tmp của ứng dụng. Hãy đóng ứng dụng trước khi thực hiện.")
             }
-            .alert("Restore \(selectedApp?.name ?? "App")?", isPresented: $showConfirmRestore) {
-                Button("Restore", role: .destructive) {
+            .alert("Khôi phục \(selectedApp?.name ?? "Ứng dụng")?", isPresented: $showConfirmRestore) {
+                Button("Khôi phục ngay", role: .destructive) {
                     if let app = selectedApp, let path = app.latestBackupPath {
                         engine.restoreApp(app, from: path) { success, msg in
-                            alertTitle = success ? "Restored" : "Restore Failed"
+                            alertTitle = success ? "Đã khôi phục" : "Khôi phục thất bại"
                             alertMessage = msg
                             showAlert = true
                         }
                     }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("Hủy", role: .cancel) {}
             } message: {
-                Text("Overwrites current Documents and Library with the backup snapshot. Make sure the app is closed.")
+                Text("Ghi đè thư mục Documents và Library hiện tại bằng bản sao lưu đã chọn. Hãy đóng ứng dụng trước khi khôi phục.")
             }
             .alert(alertTitle, isPresented: $showAlert) {
-                Button("OK", role: .cancel) {}
+                Button("Đóng", role: .cancel) {}
             } message: {
                 Text(alertMessage)
             }
@@ -362,7 +359,7 @@ struct AppBackupSnapshotsSheet: View {
         NavigationView {
             List {
                 if snapshots.isEmpty {
-                    Text("No backup snapshots found for \(app.name).")
+                    Text("Chưa có bản sao lưu nào cho \(app.name).")
                         .foregroundStyle(.secondary)
                 } else {
                     Section {
@@ -393,7 +390,7 @@ struct AppBackupSnapshotsSheet: View {
                                 }
                                 .buttonStyle(.borderless)
                                 
-                                Button("Restore") {
+                                Button("Khôi phục") {
                                     targetRestorePath = snapPath
                                     showConfirmRestore = true
                                 }
@@ -410,29 +407,29 @@ struct AppBackupSnapshotsSheet: View {
                             reloadSnapshots()
                         }
                     } header: {
-                        Text("\(app.name) Snapshots (\(snapshots.count))")
+                        Text("Các mốc Sao lưu của \(app.name) (\(snapshots.count))")
                     } footer: {
-                        Text("Swipe left on any snapshot to delete it.")
+                        Text("Vuốt sang trái vào bất kỳ bản sao lưu nào để xóa.")
                     }
                 }
             }
-            .navigationTitle("Backup Snapshots")
+            .navigationTitle("Quản lý Snapshot")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         engine.backupApp(app) { ok, msg in
                             reloadSnapshots()
-                            statusTitle = ok ? "Snapshot Created" : "Backup Failed"
+                            statusTitle = ok ? "Đã tạo Snapshot" : "Lỗi sao lưu"
                             statusMessage = msg
                             showStatus = true
                         }
                     } label: {
-                        Label("New Snapshot", systemImage: "plus")
+                        Label("Tạo mới", systemImage: "plus")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    Button("Xong") {
                         dismiss()
                     }
                 }
@@ -440,24 +437,24 @@ struct AppBackupSnapshotsSheet: View {
             .onAppear {
                 reloadSnapshots()
             }
-            .alert("Restore Snapshot?", isPresented: $showConfirmRestore) {
-                Button("Restore", role: .destructive) {
+            .alert("Khôi phục Snapshot này?", isPresented: $showConfirmRestore) {
+                Button("Khôi phục", role: .destructive) {
                     if let path = targetRestorePath {
                         engine.restoreApp(app, from: path) { ok, msg in
-                            statusTitle = ok ? "Restored" : "Restore Failed"
+                            statusTitle = ok ? "Đã khôi phục" : "Khôi phục thất bại"
                             statusMessage = msg
                             showStatus = true
                         }
                     }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("Hủy", role: .cancel) {}
             } message: {
                 if let p = targetRestorePath {
-                    Text("Overwrite \(app.name) data with snapshot \(URL(fileURLWithPath: p).lastPathComponent)? Make sure the app is closed.")
+                    Text("Ghi đè dữ liệu \(app.name) bằng bản sao lưu \(URL(fileURLWithPath: p).lastPathComponent)? Hãy đóng ứng dụng trước khi thực hiện.")
                 }
             }
             .alert(statusTitle, isPresented: $showStatus) {
-                Button("OK", role: .cancel) {}
+                Button("Đóng", role: .cancel) {}
             } message: {
                 Text(statusMessage)
             }

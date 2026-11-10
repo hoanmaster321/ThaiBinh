@@ -1,8 +1,8 @@
 //
 //  ContentView.swift
-//  ErosionWQ
+//  ThaiBinh (ErosionWQ)
 //
-//  Home & Dashboard View: Device Diagnostics, App Group Status, Fast Actions & Console
+//  Trang chủ & Bảng điều khiển: Chẩn đoán thiết bị, App Group, Tác vụ nhanh & Nhật ký hệ thống
 //
 
 import SwiftUI
@@ -27,7 +27,7 @@ struct ContentView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(engine.deviceLine)
                                     .font(.headline)
-                                Text("worse_query sandbox escape active")
+                                Text("worse_query MCM Sandbox Escape · Bản quyền © ThaiBinh")
                                     .font(.caption)
                                     .foregroundStyle(.green)
                             }
@@ -48,7 +48,7 @@ struct ContentView: View {
                         }
                         
                         HStack {
-                            Label("Device Storage:", systemImage: "internaldrive")
+                            Label("Bộ nhớ máy:", systemImage: "internaldrive")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()
@@ -59,7 +59,7 @@ struct ContentView: View {
                         }
                         
                         HStack {
-                            Label("Local Backups:", systemImage: "externaldrive.badge.timemachine")
+                            Label("Sao lưu cục bộ:", systemImage: "externaldrive.badge.timemachine")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()
@@ -71,7 +71,7 @@ struct ContentView: View {
                     }
                     .padding(.vertical, 4)
                 } header: {
-                    HeaderLabel("Device & Exploit", symbol: "info.circle")
+                    HeaderLabel("Thiết bị & Trạng thái Exploit", symbol: "info.circle")
                 }
                 
                 Section {
@@ -80,7 +80,7 @@ struct ContentView: View {
                         mgr.shouldRespring = true
                     } label: {
                         HStack {
-                            Label("Respring SpringBoard", systemImage: "arrow.counterclockwise.circle.fill")
+                            Label("Khởi động lại SpringBoard (Respring)", systemImage: "arrow.counterclockwise.circle.fill")
                                 .foregroundStyle(.orange)
                             Spacer()
                             Image(systemName: "bolt.fill")
@@ -90,12 +90,12 @@ struct ContentView: View {
                     
                     Button {
                         engine.cleanCrashLogs { freed in
-                            alertMsg = "Purged \(wq_size_text(freed)) of crash reports."
+                            alertMsg = "Đã dọn sạch \(wq_size_text(freed)) bộ nhớ đệm chẩn đoán & icon cache hệ thống."
                             showAlert = true
                         }
                     } label: {
                         HStack {
-                            Label("Quick Clear Crash Reports", systemImage: "stethoscope")
+                            Label("Dọn nhanh Chẩn đoán & Icon Cache", systemImage: "stethoscope")
                             Spacer()
                             Image(systemName: "trash")
                                 .foregroundStyle(.secondary)
@@ -105,34 +105,36 @@ struct ContentView: View {
                     Button {
                         engine.scanApps()
                         engine.scanCaches()
-                        alertMsg = "Started background rescan of applications and caches."
+                        alertMsg = "Đang tiến hành quét lại danh sách ứng dụng và bộ nhớ đệm trong nền."
                         showAlert = true
                     } label: {
                         HStack {
-                            Label("Rescan Apps & Containers", systemImage: "arrow.triangle.2.circlepath")
+                            Label("Quét lại Ứng dụng & Container", systemImage: "arrow.triangle.2.circlepath")
                             Spacer()
                             Image(systemName: "arrow.clockwise")
                                 .foregroundStyle(.secondary)
                         }
                     }
                 } header: {
-                    HeaderLabel("Quick Actions", symbol: "bolt")
+                    HeaderLabel("Tác vụ nhanh", symbol: "bolt")
                 }
                 
                 Section {
                     LogView()
                         .modifier(TerminalPlatter())
                 } header: {
-                    HeaderLabel("Live Console Logs", symbol: "apple.terminal")
+                    HeaderLabel("Nhật ký hệ thống (Live Console)", symbol: "apple.terminal")
+                } footer: {
+                    Text("ThaiBinh (ErosionWQ) · Phát triển bởi hoanmaster321")
                 }
             }
-            .navigationTitle("ErosionWQ")
+            .navigationTitle("ThaiBinh")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showSettings = true
                     } label: {
-                        Label("Settings", systemImage: "gear")
+                        Label("Cài đặt", systemImage: "gear")
                             .labelStyle(.iconOnly)
                     }
                 }
@@ -140,8 +142,8 @@ struct ContentView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView()
             }
-            .alert("Action Result", isPresented: $showAlert) {
-                Button("OK", role: .cancel) {}
+            .alert("Thông báo", isPresented: $showAlert) {
+                Button("Đóng", role: .cancel) {}
             } message: {
                 Text(alertMsg)
             }

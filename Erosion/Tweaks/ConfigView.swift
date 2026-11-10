@@ -1,8 +1,8 @@
 //
 //  ConfigView.swift
-//  Erosion
+//  ThaiBinh (ErosionWQ)
 //
-//  Created by lunginspector on 8/21/26.
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -14,8 +14,8 @@ enum CNURL {
 }
 
 enum CNMsg {
-    static var supWarning = "If you're using this tweak and your device is already MDM-configured, do NOT touch this toggle! Also, and this goes for all users, you may see a setup screen after respringing. Use at your own risk."
-    static var resetInfo = "By clicking \"Confirm\", your footnote will be removed and your device will be unsupervised."
+    static var supWarning = "Nếu thiết bị của bạn đang được quản lý MDM doanh nghiệp, KHÔNG chạm vào nút này! Bạn có thể thấy màn hình thiết lập sau khi Respring."
+    static var resetInfo = "Khi nhấn \"Xác nhận\", dòng chữ dưới màn hình khóa sẽ bị xóa và thiết bị sẽ tắt chế độ Giám sát (Supervision)."
 }
 
 struct ConfigView: View {
@@ -69,32 +69,32 @@ struct ConfigView: View {
                         }
                     )
                     
-                    TextField("Custom Footnote", text: $footnoteText)
+                    TextField("Nhập dòng chữ cuối Màn hình khóa (Footnote)", text: $footnoteText)
                 }
                 
                 Section {
-                    PlainToggle("Enable Supervision", infoType: .warning, infoTitle: "Supervision Warning!", infoMessage: CNMsg.supWarning, isOn: $supervised)
+                    PlainToggle("Bật chế độ Giám sát (Supervision)", infoType: .warning, infoTitle: "Cảnh báo Supervision!", infoMessage: CNMsg.supWarning, isOn: $supervised)
                     if supervised {
-                        TextField("Organization Name", text: $orgName)
+                        TextField("Tên Tổ chức / Chủ sở hữu", text: $orgName)
                     }
                 } header: {
-                    HeaderLabel("Supervision", symbol: "eye")
+                    HeaderLabel("Giám sát Thiết bị (Supervision)", symbol: "eye")
                 }
             }
-            .navigationTitle("Configurations")
+            .navigationTitle("Cấu hình & Giám sát")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        Alertinator.shared.alert(title: "Are you sure you'd like to reset your tweaks?", body: CNMsg.resetInfo, actionLabel: "Confirm", action: {
+                        Alertinator.shared.alert(title: "Khôi phục cài đặt gốc?", body: CNMsg.resetInfo, actionLabel: "Xác nhận", action: {
                             reset()
                         })
                     } label: {
-                        Label("Restore Tweaks", systemImage: "gobackward")
+                        Label("Đặt lại", systemImage: "gobackward")
                             .labelStyle(.iconOnly)
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Apply", role: .adaptiveConfirm) {
+                    Button("Áp dụng", role: .adaptiveConfirm) {
                         apply()
                     }
                 }
@@ -159,16 +159,16 @@ struct ConfigView: View {
             if !wq_write(CNURL.cloudConfig.path, ccData, &err) && !wq_create_file(CNURL.cloudConfig.path, ccData, &err) {
                 try ccData.write(to: CNURL.cloudConfig)
             }
-            print("(cn) successfully applied config tweaks!")
+            print("(cn) Đã áp dụng cấu hình thành công!")
             Haptic.shared.play(.soft)
             if autoRespring {
                 mgr.shouldRespring = true
             } else {
-                Alertinator.shared.alert(title: "Successfully applied config tweaks!", body: AppMsg.applied, actionLabel: "Respring", action: { mgr.shouldRespring = true })
+                Alertinator.shared.alert(title: "Đã áp dụng cấu hình!", body: AppMsg.applied, actionLabel: "Respring", action: { mgr.shouldRespring = true })
             }
         } catch {
             print("(cn) failed to write config files: \(error.localizedDescription)")
-            Alertinator.shared.alert(title: "Failed to apply tweaks!", body: AppMsg.opFailed)
+            Alertinator.shared.alert(title: "Lỗi áp dụng cấu hình!", body: AppMsg.opFailed)
         }
     }
     
@@ -185,22 +185,21 @@ struct ConfigView: View {
             if !wq_write(CNURL.cloudConfig.path, ccData, &err) {
                 try ccData.write(to: CNURL.cloudConfig)
             }
-            print("(cn) successfully reset config tweaks!")
+            print("(cn) Đã đặt lại cấu hình!")
             Haptic.shared.play(.soft)
             loadData()
             footnoteText = ""
-            Alertinator.shared.alert(title: "Successfully reset config tweaks!", body: AppMsg.applied, actionLabel: "Respring", action: { mgr.shouldRespring = true })
+            Alertinator.shared.alert(title: "Đã đặt lại cấu hình!", body: AppMsg.applied, actionLabel: "Respring", action: { mgr.shouldRespring = true })
         } catch {
             print("(cn) failed to reset config files: \(error.localizedDescription)")
-            Alertinator.shared.alert(title: "Failed to reset tweaks!", body: AppMsg.opFailed)
+            Alertinator.shared.alert(title: "Không thể đặt lại cấu hình!", body: AppMsg.opFailed)
         }
     }
 }
 
-// MARK: ui
 struct QuickActionBackground: ViewModifier {
     func body(content: Content) -> some View {
-        if #available(iOS 19.0, *) {
+        if #available(iOS 26.0, *) {
             content
                 .glassEffect(.clear.interactive(), in: .circle)
         } else {

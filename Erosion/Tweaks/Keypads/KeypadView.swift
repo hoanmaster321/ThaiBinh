@@ -93,7 +93,7 @@ struct KeypadView: View {
                             }
                         }
                     } label: {
-                        Label("Built-in Themes", systemImage: "paintpalette.fill")
+                        Label("6 Bộ Theme Dựng Sẵn", systemImage: "paintpalette.fill")
                     }
                     
                     Divider()
@@ -101,39 +101,39 @@ struct KeypadView: View {
                     Button {
                         kpMgr.maskKeysIntoCircle(size: size, custW: custW, custH: custH)
                     } label: {
-                        Label("Mask Keys", systemImage: "circle")
+                        Label("Cắt tròn các phím", systemImage: "circle")
                     }
                     Button {
                         size = .defSize
                         kpMgr.getCurrentKeypads()
                     } label: {
-                        Label("Get Current Keys", systemImage: "externaldrive")
+                        Label("Tải bộ phím hiện tại", systemImage: "externaldrive")
                     }
                     Button {
                         openApp(withBID: SysBID.phone)
                     } label: {
-                        Label("Open Phone", systemImage: "arrow.up.right.square")
+                        Label("Mở ứng dụng Điện thoại", systemImage: "arrow.up.right.square")
                     }
                     Divider()
                     Button {
                         size = .defSize
                         kpMgr.clearKeypads()
                     } label: {
-                        Label("Clear Keys", systemImage: "xmark")
+                        Label("Xóa trống bảng chọn", systemImage: "xmark")
                     }
                     Button(role: .destructive) {
-                        Alertinator.shared.alert(title: "Are you sure you'd like to reset your set keys?", body: KPMsg.resetWarn, actionLabel: "Confirm", action: {
+                        Alertinator.shared.alert(title: "Đặt lại bàn phím mặc định?", body: KPMsg.resetWarn, actionLabel: "Xác nhận", action: {
                             let res = kpMgr.resetKeypadItems()
                             if res {
                                 kpMgr.mpKeypad = emptyKeypadArray
                                 kpMgr.getCurrentKeypads()
-                                Alertinator.shared.alert(title: "Successfully reset dialer keys!", body: KPMsg.applyComp)
+                                Alertinator.shared.alert(title: "Đã đặt lại bàn phím!", body: KPMsg.applyComp)
                             } else {
-                                Alertinator.shared.alert(title: "Failed to reset dialer keys!", body: AppMsg.opFailed)
+                                Alertinator.shared.alert(title: "Không thể đặt lại bàn phím!", body: AppMsg.opFailed)
                             }
                         })
                     } label: {
-                        Label("Reset Keys", systemImage: "trash")
+                        Label("Khôi phục phím mặc định", systemImage: "trash")
                     }
                 } label: {
                     Label("Menu", systemImage: "ellipsis")
@@ -141,7 +141,7 @@ struct KeypadView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Import") {
+                Button("Nhập ZIP") {
                     showFileImporter = true
                 }
             }

@@ -1,8 +1,9 @@
 //
 //  FMRootView.swift
-//  ErosionWQ
+//  ThaiBinh (ErosionWQ)
 //
-//  File Browser Root View: Fast container bookmarks & custom path navigation
+//  Trình duyệt Tệp MCM Container & Sao lưu an toàn
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -36,92 +37,92 @@ struct FMRootView: View {
                     NavigationLink {
                         FileBrowserView(path: FSURL.appContainers, isContainer: true)
                     } label: {
-                        Label("App Data Containers", systemImage: "square.grid.2x2")
+                        Label("Dữ liệu Ứng dụng (Data/Application)", systemImage: "square.grid.2x2")
                     }
                     
                     NavigationLink {
                         FileBrowserView(path: FSURL.appGroup, shouldGrant: true)
                     } label: {
-                        Label("App Groups", systemImage: "square.stack.3d.up")
+                        Label("Nhóm Ứng dụng (Shared/AppGroup)", systemImage: "square.stack.3d.up")
                     }
                     
                     NavigationLink {
                         FileBrowserView(path: FSURL.appPlugins, isContainer: true)
                     } label: {
-                        Label("Plugin Containers", systemImage: "puzzlepiece.extension")
+                        Label("Tiện ích mở rộng & Widget (PluginKitPlugin)", systemImage: "puzzlepiece.extension")
                     }
                 } header: {
-                    HeaderLabel("Applications", symbol: "app.badge")
+                    HeaderLabel("Nhánh Ứng dụng (MCM Application)", symbol: "app.badge")
                 }
                 
                 Section {
                     NavigationLink {
+                        FileBrowserView(path: FSURL.sysGroup, isContainer: true)
+                    } label: {
+                        Label("Nhóm Hệ thống (SystemGroup - Gestalt, Profiles)", systemImage: "slider.horizontal.3")
+                    }
+                    
+                    NavigationLink {
                         FileBrowserView(path: FSURL.internalDaemons, isContainer: true)
                     } label: {
-                        Label("Internal Daemons", systemImage: "gearshape.2")
+                        Label("Tiến trình Nội bộ (InternalDaemon)", systemImage: "gearshape.2")
                     }
                     
                     NavigationLink {
                         FileBrowserView(path: FSURL.systemData, shouldGrant: true)
                     } label: {
-                        Label("System Data", systemImage: "cpu")
-                    }
-                    
-                    NavigationLink {
-                        FileBrowserView(path: FSURL.sysGroup, isContainer: true)
-                    } label: {
-                        Label("System Groups (Gestalt & Profiles)", systemImage: "slider.horizontal.3")
+                        Label("Dữ liệu Hệ thống (Data/System)", systemImage: "cpu")
                     }
                     
                     NavigationLink {
                         FileBrowserView(path: URL(fileURLWithPath: "/"), shouldGrant: true)
                     } label: {
-                        Label("Root Filesystem (/)", systemImage: "internaldrive")
+                        Label("Thư mục Gốc (/)", systemImage: "internaldrive")
                     }
                 } header: {
-                    HeaderLabel("System Containers", symbol: "gear")
+                    HeaderLabel("Nhánh Hệ thống (MCM System)", symbol: "gear")
                 }
                 
                 Section {
                     NavigationLink {
                         FileBrowserView(path: FSURL.appBackups, shouldGrant: false)
                     } label: {
-                        Label("App Data Backups", systemImage: "externaldrive.badge.timemachine")
+                        Label("Kho Sao lưu Ứng dụng (AppBackups)", systemImage: "externaldrive.badge.timemachine")
                     }
                     
                     NavigationLink {
                         FileBrowserView(path: FSURL.safeBackups, shouldGrant: false)
                     } label: {
-                        Label("File Overwrite Backups", systemImage: "arrow.counterclockwise.circle")
+                        Label("Kho Sao lưu Tệp bị ghi đè (Backups)", systemImage: "arrow.counterclockwise.circle")
                     }
                 } header: {
-                    HeaderLabel("Safety Backups", symbol: "shield.checkerboard")
+                    HeaderLabel("Kho Sao lưu An toàn", symbol: "shield.checkerboard")
                 }
                 
                 Section {
                     Button {
                         showCustomPathAlert = true
                     } label: {
-                        Label("Go to Path…", systemImage: "arrow.right.circle")
+                        Label("Đi tới Đường dẫn bất kỳ…", systemImage: "arrow.right.circle")
                     }
                 } header: {
-                    HeaderLabel("Navigation", symbol: "magnifyingglass")
+                    HeaderLabel("Điều hướng nhanh", symbol: "magnifyingglass")
                 }
             }
-            .navigationTitle("File Browser")
-            .alert("Go to Path", isPresented: $showCustomPathAlert) {
+            .navigationTitle("Trình duyệt Tệp")
+            .alert("Đi tới Đường dẫn", isPresented: $showCustomPathAlert) {
                 TextField("/var/mobile/...", text: $customPathInput)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
-                Button("Go") {
+                Button("Mở") {
                     let cleaned = customPathInput.trimmingCharacters(in: .whitespacesAndNewlines)
                     if !cleaned.isEmpty {
                         navigateToCustomURL = URL(fileURLWithPath: cleaned)
                     }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("Hủy", role: .cancel) {}
             } message: {
-                Text("Enter an absolute iOS filesystem path to navigate to.")
+                Text("Nhập đường dẫn tuyệt đối trên hệ thống tệp iOS để mở.")
             }
             .background(
                 Group {

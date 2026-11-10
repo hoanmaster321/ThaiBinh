@@ -1,8 +1,8 @@
 //
 //  SettingsView.swift
-//  Erosion
+//  ThaiBinh (ErosionWQ)
 //
-//  Created by lunginspector on 8/20/26.
+//  Bản quyền © 2026 ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -15,39 +15,40 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Section {
-                    Toggle("Auto-Respring", isOn: $autoRespring)
+                    Toggle("Tự động Respring sau khi áp dụng", isOn: $autoRespring)
                 } header: {
-                    HeaderLabel("App Settings", symbol: "gearshape")
+                    HeaderLabel("Cài đặt chung", symbol: "gearshape")
                 } footer: {
-                    Text("Automatically resprings your device after applying a tweak.")
+                    Text("Tự động khởi động lại SpringBoard ngay sau khi áp dụng các tinh chỉnh hệ thống.")
                 }
                 
                 Section {
                     AppInfoCell(build: build)
                 } header: {
-                    HeaderLabel("About", symbol: "info.circle")
+                    HeaderLabel("Thông tin & Bản quyền", symbol: "info.circle")
                 } footer: {
-                    Text("Made with love by the [jailbreak.party](https://jailbreak.party) team.")
+                    Text("Bản quyền © 2026 **ThaiBinh (hoanmaster321)**. Phát triển và Việt hóa dựa trên nền tảng mở [ThaiBinh GitHub](https://github.com/hoanmaster321/ThaiBinh).")
                 }
                 
                 Section {
-                    LinkCreditCell(image: Image("lunginspector"), name: "lunginspector", description: "Primary developer and maintainer.", url: "https://github.com/lunginspector")
-                    LinkCreditCell(image: Image("forcequit"), name: "forcequit", description: "worse_query sandbox escape.", url: "https://github.com/forcequitOS")
-                    LinkCreditCell(image: Image("0xjohnny"), name: "0xjohnny", description: "worse_query sandbox escape.", url: "https://github.com/0xjohnnydev")
-                    LinkCreditCell(image: Image("skadz108"), name: "Skadz", description: "Exploit implementation, backend functions, and project maintainer.", url: "https://github.com/skadz108")
-                    LinkCreditCell(image: Image("rooootdev"), name: "rooootdev", description: "Various backend components.", url: "https://github.com/rooootdev")
-                    LinkCreditCell(image: Image("neonmodder123"), name: "neonmodder123", description: "Developed WebView respring method.", url: "https://github.com/neonmodder123")
+                    LinkCreditCell(image: Image(systemName: "crown.fill"), name: "ThaiBinh (hoanmaster321)", description: "Chủ sở hữu dự án, phát triển tích hợp, nâng cấp tính năng & Việt hóa toàn diện.", url: "https://github.com/hoanmaster321/ThaiBinh")
+                    LinkCreditCell(image: Image("lunginspector"), name: "lunginspector", description: "Tác giả nền tảng Erosion gốc.", url: "https://github.com/lunginspector")
+                    LinkCreditCell(image: Image(systemName: "externaldrive.fill.badge.checkmark"), name: "kolbicz", description: "Tác giả nhân xử lý WQFiles & LaunchServices.", url: "https://github.com/kolbicz/WQFiles")
+                    LinkCreditCell(image: Image("forcequit"), name: "forcequit (Taj C)", description: "Kỹ thuật vượt sandbox worse_query.", url: "https://github.com/forcequitOS")
+                    LinkCreditCell(image: Image("0xjohnny"), name: "0xjohnny", description: "Kỹ thuật vượt sandbox worse_query / bad_query.", url: "https://github.com/0xjohnnydev")
+                    LinkCreditCell(image: Image("skadz108"), name: "Skadz", description: "Triển khai exploit và các hàm hệ thống.", url: "https://github.com/skadz108")
+                    LinkCreditCell(image: Image("neonmodder123"), name: "neonmodder123", description: "Phương thức Respring qua WebView.", url: "https://github.com/neonmodder123")
                 } header: {
-                    HeaderLabel("Credits", symbol: "star")
+                    HeaderLabel("Đóng góp & Tác giả", symbol: "star.fill")
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle("Cài đặt")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         dismiss()
                     } label: {
-                        ToolbarLabel("Close", symbol: "xmark")
+                        ToolbarLabel("Đóng", symbol: "xmark")
                     }
                 }
             }

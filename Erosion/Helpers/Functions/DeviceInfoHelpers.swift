@@ -1,33 +1,19 @@
 //
 //  DeviceInfoHelpers.swift
-//  Erosion
-//
-//  Created by lunginspector on 8/14/26.
+//  ThaiBinh (ErosionWQ)
 //
 
 import Foundation
-
 import UIKit
 
 let vrs = ProcessInfo.processInfo.operatingSystemVersion
-// rave is the internal codename for ios 27
+
 func raveSupported() -> Bool {
-    // Skadz 2026-11-08:
-    //   we're updating to worse_query which is at the moment a 0day
-    //   add back in and update whenever it gets patched ig
-    return vrs.majorVersion >= 27
+    return true
 }
 
 func isSupported() -> Bool {
-    // Skadz 2026-11-08:
-    //   we're updating to worse_query which is at the moment a 0day
-    //   add back in and update whenever it gets patched ig
     return true
-    
-//    if (vrs.majorVersion == 26 && vrs.minorVersion < 7) || raveSupported() {
-//        return true
-//    }
-//    return false
 }
 
 func doubleSysVrs() -> Double {
@@ -36,9 +22,6 @@ func doubleSysVrs() -> Double {
     return Double(combined) ?? 0.0
 }
 
-
-
-// device info getters
 func machineName() -> String {
     var systemInfo = utsname()
     uname(&systemInfo)

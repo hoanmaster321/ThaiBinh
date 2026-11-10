@@ -1,8 +1,8 @@
 //
 //  ErosionApp.swift
-//  Erosion
+//  ThaiBinh (ErosionWQ)
 //
-//  Created by lunginspector on 8/14/26.
+//  Developed & Customized by ThaiBinh (hoanmaster321)
 //
 
 import SwiftUI
@@ -41,27 +41,27 @@ struct ErosionApp: App {
             TabView(selection: $currentTab) {
                 ContentView()
                     .tabItem {
-                        Label("Home", systemImage: "house")
+                        Label("Trang chủ", systemImage: "house")
                     }
                     .tag(0)
                 TweaksView()
                     .tabItem {
-                        Label("Tweaks", systemImage: "wrench.and.screwdriver")
+                        Label("Tinh chỉnh", systemImage: "wrench.and.screwdriver")
                     }
                     .tag(1)
                 AppsManagerView()
                     .tabItem {
-                        Label("Apps", systemImage: "square.grid.2x2")
+                        Label("Ứng dụng", systemImage: "square.grid.2x2")
                     }
                     .tag(2)
                 CacheCleanerView()
                     .tabItem {
-                        Label("Cleaner", systemImage: "sparkles")
+                        Label("Dọn rác", systemImage: "sparkles")
                     }
                     .tag(3)
                 FMRootView()
                     .tabItem {
-                        Label("Files", systemImage: "folder")
+                        Label("Tệp tin", systemImage: "folder")
                     }
                     .tag(4)
             }
@@ -85,13 +85,11 @@ struct ErosionApp: App {
                     }
                 }
                 print("")
-                print("[*] Erosion v\(AppInfo.appVersion) (\(build))")
-                print("[*] Running on \(UIDevice.current.systemName) \(UIDevice.current.systemVersion), \(machineName())")
-                if !isSupported() && !weOnADebugBuild {
-                    Alertinator.shared.alert(title: "Your \(device.systemName) version is not supported!", body: AppMsg.unsupported, showCancel: false, actionLabel: "Exit", action: { exitinator() })
-                }
+                print("[*] ThaiBinh (ErosionWQ) v\(AppInfo.appVersion) (\(build))")
+                print("[*] Bản quyền © 2026 ThaiBinh (hoanmaster321)")
+                print("[*] Thiết bị: \(UIDevice.current.systemName) \(UIDevice.current.systemVersion), \(machineName())")
                 group = wq.getAppGroup()
-                print("(wq) Using app group: \(group)")
+                print("[*] App Group đang hoạt động: \(group)")
             }
             .overlay {
                 if mgr.shouldRespring {
