@@ -105,7 +105,7 @@ struct CacheCleanerView: View {
                                 ProgressView()
                             } else {
                                 Button {
-                                    engine.scanCaches()
+                                    engine.scanCaches(forceRefresh: true)
                                 } label: {
                                     Image(systemName: "arrow.clockwise")
                                         .foregroundStyle(.blue)
@@ -216,7 +216,7 @@ struct CacheCleanerView: View {
             .navigationTitle("Dọn rác & Cache")
             .searchable(text: $searchText, prompt: "Lọc theo tên ứng dụng")
             .refreshable {
-                engine.scanCaches()
+                engine.scanCaches(forceRefresh: true)
             }
             .onAppear {
                 if engine.cacheItems.isEmpty {

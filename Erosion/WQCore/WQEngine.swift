@@ -93,22 +93,30 @@ final class WQEngine: ObservableObject {
     
     // MARK: - App Manager
     
-    func scanApps() {
+    func scanApps(forceRefresh: Bool = false) {
         guard !isScanningApps else { return }
         isScanningApps = true
-        scanAppProgress = "Đang liệt kê các container ứng dụng..."
+        scanAppProgress = "Đang đọc cơ sở dữ liệu ứng dụng (LaunchServices v0.8)..."
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             
+            if forceRefresh {
+                wq_enumerate_invalidate()
+                wq_display_names_reset_miss()
+            }
+            
             let root = "/private/var/mobile/Containers/Data/Application"
-            // Fast inode scan with 400,000 bounds
-            let containers = wq_enumerate(root, 400000) { done, total, found in
+            // WQFiles v0.8: maxInode = 0 uses MCM / LaunchServices DB fast path + persistent incremental scan
+            var containers = wq_enumerate(root, 0) { done, total, found in
                 DispatchQueue.main.async {
                     let pct = total > 0 ? (done * 100 / total) : 0
-                    self.scanAppProgress = "Đang quét container... \(pct)% (Tìm thấy \(found))"
+                    self.scanAppProgress = "Đang tìm container... \(pct)% (Đã thấy \(found))"
                 }
             } ?? []
+            if containers.isEmpty {
+                containers = wq_enumerate(root, 400000, nil) ?? []
+            }
             
             var discovered: [AppInfoItem] = []
             var totalBytes: UInt64 = 0
@@ -291,13 +299,18 @@ final class WQEngine: ObservableObject {
     
     // MARK: - Cache Cleaner
     
-    func scanCaches() {
+    func scanCaches(forceRefresh: Bool = false) {
         guard !isScanningCaches else { return }
         isScanningCaches = true
         cleanStatusMessage = "Đang quét bộ nhớ đệm ứng dụng..."
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
+            
+            if forceRefresh {
+                wq_enumerate_invalidate()
+                wq_display_names_reset_miss()
+            }
             
             var items: [CacheScanItem] = []
             let roots = [
@@ -308,7 +321,7 @@ final class WQEngine: ObservableObject {
             ]
             
             for root in roots {
-                let containers = wq_enumerate(root, 400000, nil) ?? []
+                let containers = wq_enumerate(root, 0, nil) ?? wq_enumerate(root, 400000, nil) ?? []
                 for container in containers {
                     guard let bundleID = wq_container_label(container) else { continue }
                     let cachesPath = (container as NSString).appendingPathComponent("Library/Caches")

@@ -86,6 +86,9 @@ func getFileItem(at url: URL, isContainer: Bool = false) -> FileItem {
             }
             item.uttype = UTType(filenameExtension: url.pathExtension) ?? .data
             item.size = Int(st.st_size)
+            let cdate = Date(timeIntervalSince1970: TimeInterval(st.st_birthtimespec.tv_sec > 0 ? st.st_birthtimespec.tv_sec : st.st_mtimespec.tv_sec))
+            item.creationDate = cdate
+            item.creationDateStr = formatter.string(from: cdate)
             let mdate = Date(timeIntervalSince1970: TimeInterval(st.st_mtimespec.tv_sec))
             item.modifiedDate = mdate
             item.modifiedDateStr = formatter.string(from: mdate)

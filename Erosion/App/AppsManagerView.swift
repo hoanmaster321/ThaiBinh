@@ -57,110 +57,170 @@ struct AppsManagerView: View {
         }
     }
     
+    var alphabetSections: [(String, [AppInfoItem])] {
+        var groups: [String: [AppInfoItem]] = [:]
+        for app in filteredApps {
+            let firstChar = app.name.trimmingCharacters(in: .whitespacesAndNewlines).first.map { String($0).uppercased() } ?? "#"
+            let key = (firstChar >= "A" && firstChar <= "Z") ? firstChar : "#"
+            groups[key, default: []].append(app)
+        }
+        return groups.keys.sorted { a, b in
+            if a == "#" { return false }
+            if b == "#" { return true }
+            return a < b
+        }.map { ($0, groups[$0] ?? []) }
+    }
+    
+    @ViewBuilder
+    private func appRow(_ app: AppInfoItem) -> some View {
+        Button {
+            selectedApp = app
+            showActionSheet = true
+        } label: {
+            HStack(spacing: 12) {
+                if let icon = app.icon {
+                    Image(uiImage: icon)
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .cornerRadius(9)
+                } else {
+                    RoundedRectangle(cornerRadius: 9)
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 40, height: 40)
+                        .overlay(Image(systemName: "app.fill").foregroundStyle(.secondary))
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack {
+                        Text(app.name)
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.primary)
+                        
+                        if app.hasBackup {
+                            Text(app.backupCount > 1 ? "ĐÃ LƯU (\(app.backupCount))" : "ĐÃ LƯU")
+                                .font(.system(size: 9, weight: .bold))
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.green.opacity(0.2))
+                                .foregroundStyle(.green)
+                                .cornerRadius(4)
+                        }
+                    }
+                    
+                    Text("\(app.formattedBytes) · \(app.bundleID)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "ellipsis")
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+    
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(engine.deviceLine)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .monospaced()
-                        
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text("\(engine.apps.count) Ứng dụng")
-                                    .font(.headline)
-                                Text("Tổng dữ liệu: \(wq_size_text(engine.totalAppDataBytes))")
-                                    .font(.subheadline)
+            ScrollViewReader { scrollProxy in
+                ZStack(alignment: .trailing) {
+                    List {
+                        Section {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(engine.deviceLine)
+                                    .font(.caption)
                                     .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if engine.isScanningApps {
-                                ProgressView()
-                            } else {
-                                Button {
-                                    engine.scanApps()
-                                } label: {
-                                    Image(systemName: "arrow.clockwise.circle.fill")
-                                        .font(.title2)
+                                    .monospaced()
+                                
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("\(engine.apps.count) Ứng dụng")
+                                            .font(.headline)
+                                        Text("Tổng dữ liệu: \(wq_size_text(engine.totalAppDataBytes))")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    if engine.isScanningApps {
+                                        ProgressView()
+                                    } else {
+                                        Button {
+                                            engine.scanApps(forceRefresh: true)
+                                        } label: {
+                                            Image(systemName: "arrow.clockwise.circle.fill")
+                                                .font(.title2)
+                                                .foregroundStyle(.blue)
+                                        }
+                                    }
+                                }
+                                
+                                if !engine.scanAppProgress.isEmpty {
+                                    Text(engine.scanAppProgress)
+                                        .font(.caption2)
                                         .foregroundStyle(.blue)
                                 }
                             }
+                            .padding(.vertical, 4)
                         }
                         
-                        if !engine.scanAppProgress.isEmpty {
-                            Text(engine.scanAppProgress)
-                                .font(.caption2)
-                                .foregroundStyle(.blue)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                
-                Section {
-                    if engine.apps.isEmpty && engine.isScanningApps {
-                        HStack {
-                            ProgressView()
-                            Text("Đang quét danh sách container ứng dụng...")
-                                .padding(.leading, 8)
-                        }
-                    } else if filteredApps.isEmpty {
-                        Text(searchText.isEmpty ? "Chưa tìm thấy ứng dụng nào. Kéo xuống để quét lại." : "Không tìm thấy ứng dụng khớp '\(searchText)'")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(filteredApps) { app in
-                            Button {
-                                selectedApp = app
-                                showActionSheet = true
-                            } label: {
-                                HStack(spacing: 12) {
-                                    if let icon = app.icon {
-                                        Image(uiImage: icon)
-                                            .resizable()
-                                            .frame(width: 40, height: 40)
-                                            .cornerRadius(9)
-                                    } else {
-                                        RoundedRectangle(cornerRadius: 9)
-                                            .fill(Color.gray.opacity(0.3))
-                                            .frame(width: 40, height: 40)
-                                            .overlay(Image(systemName: "app.fill").foregroundStyle(.secondary))
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        HStack {
-                                            Text(app.name)
-                                                .font(.body)
-                                                .fontWeight(.medium)
-                                                .foregroundStyle(.primary)
-                                            
-                                            if app.hasBackup {
-                                                Text(app.backupCount > 1 ? "ĐÃ LƯU (\(app.backupCount))" : "ĐÃ LƯU")
-                                                    .font(.system(size: 9, weight: .bold))
-                                                    .padding(.horizontal, 5)
-                                                    .padding(.vertical, 2)
-                                                    .background(Color.green.opacity(0.2))
-                                                    .foregroundStyle(.green)
-                                                    .cornerRadius(4)
-                                            }
-                                        }
-                                        
-                                        Text("\(app.formattedBytes) · \(app.bundleID)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                            .lineLimit(1)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Image(systemName: "ellipsis")
-                                        .foregroundStyle(.tertiary)
+                        if engine.apps.isEmpty && engine.isScanningApps {
+                            Section {
+                                HStack {
+                                    ProgressView()
+                                    Text("Đang quét danh sách container ứng dụng...")
+                                        .padding(.leading, 8)
                                 }
+                            }
+                        } else if filteredApps.isEmpty {
+                            Section {
+                                Text(searchText.isEmpty ? "Chưa tìm thấy ứng dụng nào. Kéo xuống để quét lại." : "Không tìm thấy ứng dụng khớp '\(searchText)'")
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else if sortMode == .name {
+                            ForEach(alphabetSections, id: \.0) { (letter, sectionApps) in
+                                Section {
+                                    ForEach(sectionApps) { app in
+                                        appRow(app)
+                                    }
+                                } header: {
+                                    Text(letter)
+                                        .id("ALPHA_\(letter)")
+                                }
+                            }
+                        } else {
+                            Section {
+                                ForEach(filteredApps) { app in
+                                    appRow(app)
+                                }
+                            } header: {
+                                Text("Danh sách Ứng dụng (\(filteredApps.count))")
                             }
                         }
                     }
-                } header: {
-                    Text("Danh sách Ứng dụng (\(filteredApps.count))")
+                    
+                    if sortMode == .name && alphabetSections.count > 1 {
+                        VStack(spacing: 2) {
+                            ForEach(alphabetSections, id: \.0) { (letter, _) in
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.15)) {
+                                        scrollProxy.scrollTo("ALPHA_\(letter)", anchor: .top)
+                                    }
+                                } label: {
+                                    Text(letter)
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundStyle(.blue)
+                                        .frame(width: 18, height: 14)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 2)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .padding(.trailing, 4)
+                    }
                 }
             }
             .navigationTitle("Quản lý Ứng dụng")
@@ -179,7 +239,7 @@ struct AppsManagerView: View {
                 }
             }
             .refreshable {
-                engine.scanApps()
+                engine.scanApps(forceRefresh: true)
             }
             .onAppear {
                 if engine.apps.isEmpty {

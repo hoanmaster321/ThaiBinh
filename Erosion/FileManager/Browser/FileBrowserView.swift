@@ -11,7 +11,7 @@ import QuickLook
 import Combine
 
 enum FileSortMode: String, CaseIterable, Codable, Hashable {
-    case system, name, date, type, size
+    case system, name, date, created, type, size
     
     var id: String { label }
     
@@ -20,6 +20,7 @@ enum FileSortMode: String, CaseIterable, Codable, Hashable {
         case .system: return "Mặc định"
         case .name: return "Tên"
         case .date: return "Ngày sửa"
+        case .created: return "Ngày tạo"
         case .type: return "Loại"
         case .size: return "Kích thước"
         }
@@ -38,6 +39,7 @@ struct FileBrowserView: View {
     @AppStorage("maxInode") var maxInode = 7500000
     @AppStorage("chosenSort") var chosenSort: FileSortMode = .system
     @AppStorage("filesAscend") var filesAscend = true
+    @AppStorage("foldersFirst") var foldersFirst = true
     @AppStorage("listStyle") var listStyle = 1
     @AppStorage("hideDates") var hideDates = false
     @AppStorage("textViewerSize") var textViewerSize = 10
@@ -103,6 +105,15 @@ struct FileBrowserView: View {
                         }
                     }
                     Divider()
+                    Button {
+                        foldersFirst.toggle()
+                    } label: {
+                        if foldersFirst {
+                            Label("Thư mục lên đầu", systemImage: "checkmark")
+                        } else {
+                            Text("Thư mục lên đầu")
+                        }
+                    }
                     Button {
                         filesAscend.toggle()
                     } label: {
@@ -276,6 +287,8 @@ struct FileBrowserView: View {
             handleImport(result)
         }
         .refreshable {
+            wq_enumerate_invalidate()
+            wq_display_names_reset_miss()
             mgr.refreshFiles.toggle()
         }
         .onAppear {
@@ -311,6 +324,9 @@ struct FileBrowserView: View {
         .onChange(of: filesAscend) {
             loadFilesFromPath()
         }
+        .onChange(of: foldersFirst) {
+            loadFilesFromPath()
+        }
         .onChange(of: mgr.refreshFiles) {
             loadFilesFromPath()
         }
@@ -335,8 +351,9 @@ struct FileBrowserView: View {
             } else if isContainer || path.path.contains("/Containers/") || path.path.contains("/SystemGroup") {
                 var discoveredSet = Set<String>()
                 var orderedPaths: [String] = []
-                if let directPaths = wq_enumerate(path.path, 400000, nil), !directPaths.isEmpty {
-                    for p in directPaths where !discoveredSet.contains(p) {
+                let fastPaths = wq_enumerate(path.path, 0, nil) ?? wq_enumerate(path.path, 400000, nil) ?? []
+                if !fastPaths.isEmpty {
+                    for p in fastPaths where !discoveredSet.contains(p) {
                         discoveredSet.insert(p)
                         orderedPaths.append(p)
                     }
@@ -387,15 +404,21 @@ struct FileBrowserView: View {
             sortedFiles = files.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         case .date:
             sortedFiles = files.sorted { $0.modifiedDate > $1.modifiedDate }
+        case .created:
+            sortedFiles = files.sorted { $0.creationDate > $1.creationDate }
         case .type:
             sortedFiles = files.sorted { $0.type.sortOrder < $1.type.sortOrder }
         case .size:
             sortedFiles = files.sorted { $0.size < $1.size }
         }
 
-        sortedFiles = filesAscend ? sortedFiles : sortedFiles.reversed()
-        sortedFiles = sortedFiles.sorted { a, b in
-            a.hidden && !b.hidden
+        if chosenSort != .system && !filesAscend {
+            sortedFiles = sortedFiles.reversed()
+        }
+        if foldersFirst {
+            sortedFiles = sortedFiles.sorted { a, b in
+                (a.type == .folder) && (b.type != .folder)
+            }
         }
         return sortedFiles
     }

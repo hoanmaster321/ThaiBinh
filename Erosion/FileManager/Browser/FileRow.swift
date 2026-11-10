@@ -18,12 +18,14 @@ struct FileRow: View {
     @State private var conformsText = false
     @State private var conformsPlist = false
     @State private var conformsZip = false
+    @State private var conformsSQLite = false
     @State private var backupOriginalPath: String? = nil
     
     @State private var showInfo = false
     @State private var showPlistViewer = false
     @State private var showTextViewer = false
     @State private var showHexViewer = false
+    @State private var showSQLiteViewer = false
     @State private var previewURL: URL?
     
     var body: some View {
@@ -37,20 +39,20 @@ struct FileRow: View {
                         } else {
                             Haptic.shared.play(.heavy)
                         }
+                    } else if conformsSQLite {
+                        showSQLiteViewer = true
+                    } else if conformsPlist {
+                        showPlistViewer.toggle()
+                    } else if conformsText {
+                        showTextViewer.toggle()
                     } else {
-                        if conformsPlist {
-                            showPlistViewer.toggle()
-                        } else if conformsText {
-                            showTextViewer.toggle()
-                        } else {
-                            previewURL = file.fileURL
-                        }
+                        previewURL = file.fileURL
                     }
                 } label: {
                     HStack(spacing: isSolariumUI() ? 12 : 10) {
-                        Image(systemName: "doc")
+                        Image(systemName: conformsSQLite ? "cylinder.split.1x2" : "doc")
                             .frame(width: 20, alignment: .center)
-                            .foregroundStyle(file.hidden ? .secondary : .primary)
+                            .foregroundStyle(conformsSQLite ? .blue : (file.hidden ? .secondary : .primary))
                         
                         VStack(alignment: .leading) {
                             Text(file.name)
@@ -117,6 +119,19 @@ struct FileRow: View {
             if file.uttype.conforms(to: .zip) {
                 conformsZip = true
             }
+            let ext = file.fileURL.pathExtension.lowercased()
+            if ext == "sqlite" || ext == "sqlite3" || ext == "sqlitedb" || ext == "db" {
+                conformsSQLite = true
+            } else if file.type == .file && file.size >= 16 {
+                DispatchQueue.global(qos: .utility).async {
+                    let isSQL = wq_is_sqlite_file(file.fileURL.path)
+                    if isSQL {
+                        DispatchQueue.main.async {
+                            self.conformsSQLite = true
+                        }
+                    }
+                }
+            }
             backupOriginalPath = wq_backup_original_path(file.fileURL.path)
         }
         .sheet(isPresented: $showInfo) {
@@ -133,7 +148,44 @@ struct FileRow: View {
                 HexViewer(url: file.fileURL)
             }
         }
+        .sheet(isPresented: $showSQLiteViewer) {
+            SQLiteViewer(fileURL: file.fileURL)
+        }
         .quickLookPreview($previewURL)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                var error: NSString?
+                if wq_delete(file.fileURL.path, &error) {
+                    mgr.refreshFiles.toggle()
+                } else {
+                    do {
+                        try fm.removeItem(at: file.fileURL)
+                        mgr.refreshFiles.toggle()
+                    } catch {
+                        Alertinator.shared.alert(title: "Không thể xóa tệp!", body: (error as NSError).localizedDescription)
+                    }
+                }
+            } label: {
+                Label("Xóa", systemImage: "trash")
+            }
+            
+            if file.type == .file {
+                Button {
+                    Alertinator.shared.prompt(title: "Nhập tên mới cho tệp này:", placeholder: file.name) { result in
+                        if let name = result, !name.isEmpty {
+                            if renameFile(file.fileURL, to: name) {
+                                mgr.refreshFiles.toggle()
+                            } else {
+                                Alertinator.shared.alert(title: "Không thể đổi tên tệp!", body: Errors.checkLogs)
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Đổi tên", systemImage: "pencil")
+                }
+                .tint(.orange)
+            }
+        }
         // MARK: cell actions
         .contextMenu {
             if let origPath = backupOriginalPath {
@@ -153,18 +205,34 @@ struct FileRow: View {
                 Divider()
             }
             
+            if conformsSQLite {
+                Button {
+                    showSQLiteViewer = true
+                } label: {
+                    Label("Trình xem SQLite (Chỉ đọc)", systemImage: "cylinder.split.1x2")
+                }
+            }
+            
             Button {
                 showHexViewer = true
             } label: {
                 Label("Xem mã Hex", systemImage: "curlybraces")
             }
             
-            if conformsText || conformsPlist {
+            if conformsText || conformsPlist || conformsSQLite {
                 Menu {
                     Button {
                         previewURL = file.fileURL
                     } label: {
                         Label("Xem nhanh (Quick Look)", systemImage: "eye")
+                    }
+                    
+                    if conformsSQLite {
+                        Button {
+                            showSQLiteViewer = true
+                        } label: {
+                            Label("Trình xem SQLite", systemImage: "cylinder.split.1x2")
+                        }
                     }
                     
                     if conformsPlist {

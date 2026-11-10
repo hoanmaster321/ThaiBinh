@@ -65,8 +65,9 @@ Kỹ thuật `worse_query` yêu cầu ứng dụng được ký kèm quyền **A
 - **Custom File Overwrite & Presets (`OperationsView`)**:
   - Tích hợp danh sách Preset các đường dẫn `SystemGroup` quan trọng để ghi đè/xuất file nhanh chóng kèm cơ chế tự động sao lưu.
 
-### 3. 📦 Quản lý Dữ liệu Ứng dụng (App Manager)
-- Quét siêu tốc toàn bộ ứng dụng trong `/var/mobile/Containers/Data/Application` bằng `fsgetpath` và giải mã tên + biểu tượng thực tế từ cơ sở dữ liệu `LaunchServices` (`lsd`).
+### 3. 📦 Quản lý Dữ liệu Ứng dụng (App Manager — WQFiles v0.8)
+- **Liệt kê Container siêu tốc từ LaunchServices DB (`WQLaunchServices`)**: Hỗ trợ 6 cấu trúc bản ghi `CSStore2` trên **iOS 26.x, 27.0, 27.2 (`27.2`, `27.2b`, `27.2c`, `27.2d`)**, dò ngược từ inode mới nhất (`wq_scan_for_ls_store`) để tìm cơ sở dữ liệu `com.apple.LaunchServices-*.csstore` chỉ trong vài giây mà không cần quét toàn bộ ổ đĩa, đồng thời tự động ánh xạ Bundle ID cho container trên iOS 27.2 và tải trực tiếp icon PNG từ gói `.app` trên iOS 26.
+- **Thanh chỉ mục chữ cái A–Z**: Khi sắp xếp theo tên ứng dụng, hiển thị thanh nhảy nhanh A–Z bên cạnh phải.
 - **Multi-Snapshot Backup Manager**: Tạo nhiều bản sao lưu theo mốc thời gian (`Documents/AppBackups/<bundleID>/<timestamp>`), xem dung lượng từng bản, chọn khôi phục bất kỳ mốc thời gian nào hoặc xóa bản cũ.
 - **Import & Share Backup (`.zip`)**: Xuất bản sao lưu ra file `.zip` qua AirDrop/Files hoặc **Nhập file `.zip` sao lưu từ ngoài vào** để khôi phục dữ liệu giữa các thiết bị.
 - **1-Tap Edit App Preferences (`.plist`)**: Mở thẳng file `<Container>/Library/Preferences/<bundleID>.plist` (`UserDefaults`) vào trình sửa Plist chỉ với 1 chạm.
@@ -74,16 +75,17 @@ Kỹ thuật `worse_query` yêu cầu ứng dụng được ký kèm quyền **A
 
 ### 4. 🧹 Dọn dẹp Bộ nhớ đệm (Cache Cleaner)
 - Quét sạch `Library/Caches` và `tmp` trên cả 4 nhánh MCM (`Application`, `PluginKitPlugin`, `InternalDaemon`, `AppGroup`) cùng với `lsd.iconscache` và `osanalyticsdiagnostics` trong `SystemGroup`.
-- Bộ lọc chọn nhanh: *Select All*, *Large (>50 MB)*, *None*, kèm thanh tìm kiếm và báo cáo chính xác dung lượng giải phóng.
+- Bộ lọc chọn nhanh: *Chọn tất cả*, *Lớn (>50 MB)*, *Bỏ chọn*, kèm thanh tìm kiếm và báo cáo chính xác dung lượng giải phóng.
 
-### 5. 📁 Trình duyệt File chuyên sâu (File Browser)
+### 5. 📁 Trình duyệt File chuyên sâu & Trình xem SQLite (File Browser — WQFiles v0.8)
 - Bookmark truy cập nhanh tất cả các nhánh MCM Container, kèm hiển thị icon & tên ứng dụng trực tiếp trên từng thư mục UUID.
 - Tự động dò tìm các container hệ thống trong `/var/containers/Shared/SystemGroup` trên iOS 27.0.1+ (`wq_known_system_groups`).
 - **Bộ công cụ xem & sửa file mạnh mẽ**:
+  - **Trình xem Cơ sở dữ liệu SQLite (Chỉ đọc, Truy vấn SQL & Xuất CSV - `SQLiteViewer`)**: Tự động nhận diện tệp `.sqlite`, `.db`, `.sqlite3` (hoặc header `SQLite format 3`), mở bản sao tạm thời kèm tệp `-wal` ở chế độ `PRAGMA query_only = ON`, duyệt danh sách bảng & view kèm số dòng, phân trang dữ liệu, xem chi tiết từng dòng, chạy truy vấn `SELECT` / `PRAGMA` / `EXPLAIN` và **Xuất kết quả ra tệp `.csv`**.
   - **Plist Viewer & Raw XML Editor**: Sửa dạng cây Key-Value hoặc chuyển sang sửa mã XML trực tiếp (tự động giải mã Binary Plist `bplist00` sang XML và đóng gói lại đúng định dạng gốc khi lưu).
   - **Text Editor & Hex Viewer**: Xem/sửa văn bản và soi mã Hex từng byte.
-  - **Đổi tênFile/Thư mục nâng cao (`wq_rename`)**: Hỗ trợ đổi tên trực tiếp hoặc tự động fallback copy+unlink an toàn trong môi trường sandbox.
-  - **1-Tap File Restore**: Tự động sao lưu mọi file bị ghi đè/xóa vào `Documents/Backups`, kèm nút **"Restore to Original Path"** ngay trong menu nhấn giữ để hoàn tác về đúng vị trí gốc.
+  - **Vuốt để Xóa / Đổi tên (`Swipe Actions`) & Sắp xếp nâng cao**: Hỗ trợ vuốt trực tiếp trên dòng tệp/thư mục để xóa (kèm sao lưu tự động bằng APFS Clone `fclonefileat`) hoặc đổi tên; hỗ trợ tùy chọn **"Thư mục lên đầu"** và sắp xếp theo **Ngày tạo**.
+  - **1-Tap File Restore**: Tự động sao lưu mọi file bị ghi đè/xóa vào `Documents/Backups`, kèm nút **"Khôi phục về đường dẫn gốc"** ngay trong menu nhấn giữ.
 
 ---
 

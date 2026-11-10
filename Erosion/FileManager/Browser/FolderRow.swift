@@ -80,6 +80,38 @@ struct FolderRow: View {
             InfoViewer(file)
         }
         .quickLookPreview($previewURL)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if !isContainer {
+                Button(role: .destructive) {
+                    var err: NSString?
+                    if !wq_delete(file.fileURL.path, &err) {
+                        var freed: UInt64 = 0
+                        _ = wq_purge_contents(file.fileURL.path, &freed)
+                        if !wq_delete(file.fileURL.path, &err) {
+                            try? fm.removeItem(at: file.fileURL)
+                        }
+                    }
+                    mgr.refreshFiles.toggle()
+                } label: {
+                    Label("Xóa", systemImage: "trash")
+                }
+                
+                Button {
+                    Alertinator.shared.prompt(title: "Đổi tên thư mục", placeholder: file.name) { result in
+                        if let name = result, !name.isEmpty {
+                            if renameFile(file.fileURL, to: name) {
+                                mgr.refreshFiles.toggle()
+                            } else {
+                                Alertinator.shared.alert(title: "Không thể đổi tên thư mục!", body: Errors.checkLogs)
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Đổi tên", systemImage: "pencil")
+                }
+                .tint(.orange)
+            }
+        }
         .contextMenu {
             if !isContainer {
                 Button {
