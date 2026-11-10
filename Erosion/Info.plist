@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>ThaiBinh</string>
+	<string>Thái Bình</string>
 	<key>CFBundleName</key>
-	<string>ThaiBinh</string>
+	<string>Thái Bình</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>

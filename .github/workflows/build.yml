@@ -1,4 +1,4 @@
-name: Build ErosionWQ (.ipa)
+name: Build Thái Bình (.ipa)
 
 on:
   push:

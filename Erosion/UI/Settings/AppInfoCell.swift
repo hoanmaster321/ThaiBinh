@@ -12,12 +12,12 @@ struct AppInfoCell: View {
         HStack(spacing: 14) {
             AppIconCell(image: Image(uiImage: AppInfo.appIcon ?? UIImage()))
             VStack(alignment: .leading, spacing: 2) {
-                Text("ThaiBinh (ErosionWQ)")
+                Text("Thái Bình")
                     .font(.title3.weight(.semibold))
                 Text("Phiên bản \(AppInfo.appVersion) (\(build))")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text("© 2026 hoanmaster321 · All Rights Reserved")
+                Text("© 2026 Thái Bình (hoanmaster321)")
                     .font(.caption2)
                     .foregroundStyle(.blue)
             }

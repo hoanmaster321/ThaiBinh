@@ -27,11 +27,11 @@ struct SettingsView: View {
                 } header: {
                     HeaderLabel("Thông tin & Bản quyền", symbol: "info.circle")
                 } footer: {
-                    Text("Bản quyền © 2026 **ThaiBinh (hoanmaster321)**. Phát triển và Việt hóa dựa trên nền tảng mở [ThaiBinh GitHub](https://github.com/hoanmaster321/ThaiBinh).")
+                    Text("Bản quyền © 2026 **Thái Bình (hoanmaster321)**. Phát triển và Việt hóa dựa trên nền tảng mở [Thái Bình GitHub](https://github.com/hoanmaster321/ThaiBinh).")
                 }
                 
                 Section {
-                    LinkCreditCell(image: Image(systemName: "crown.fill"), name: "ThaiBinh (hoanmaster321)", description: "Chủ sở hữu dự án, phát triển tích hợp, nâng cấp tính năng & Việt hóa toàn diện.", url: "https://github.com/hoanmaster321/ThaiBinh")
+                    LinkCreditCell(image: Image(systemName: "crown.fill"), name: "Thái Bình (hoanmaster321)", description: "Chủ sở hữu dự án, phát triển tích hợp, nâng cấp tính năng & Việt hóa toàn diện.", url: "https://github.com/hoanmaster321/ThaiBinh")
                     LinkCreditCell(image: Image("lunginspector"), name: "lunginspector", description: "Tác giả nền tảng Erosion gốc.", url: "https://github.com/lunginspector")
                     LinkCreditCell(image: Image(systemName: "externaldrive.fill.badge.checkmark"), name: "kolbicz", description: "Tác giả nhân xử lý WQFiles & LaunchServices.", url: "https://github.com/kolbicz/WQFiles")
                     LinkCreditCell(image: Image("forcequit"), name: "forcequit (Taj C)", description: "Kỹ thuật vượt sandbox worse_query.", url: "https://github.com/forcequitOS")

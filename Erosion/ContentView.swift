@@ -27,7 +27,7 @@ struct ContentView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(engine.deviceLine)
                                     .font(.headline)
-                                Text("worse_query MCM Sandbox Escape · Bản quyền © ThaiBinh")
+                                Text("worse_query MCM Sandbox Escape · Bản quyền © Thái Bình")
                                     .font(.caption)
                                     .foregroundStyle(.green)
                             }
@@ -115,6 +115,13 @@ struct ContentView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    
+                    NavigationLink {
+                        MiniGamesView()
+                    } label: {
+                        Label("Trung tâm Giải trí & Mini Games", systemImage: "gamecontroller.fill")
+                            .foregroundStyle(.purple)
+                    }
                 } header: {
                     HeaderLabel("Tác vụ nhanh", symbol: "bolt")
                 }
@@ -125,10 +132,10 @@ struct ContentView: View {
                 } header: {
                     HeaderLabel("Nhật ký hệ thống (Live Console)", symbol: "apple.terminal")
                 } footer: {
-                    Text("ThaiBinh (ErosionWQ) · Phát triển bởi hoanmaster321")
+                    Text("Thái Bình · Phát triển bởi hoanmaster321")
                 }
             }
-            .navigationTitle("ThaiBinh")
+            .navigationTitle("Thái Bình")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

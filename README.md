@@ -2,8 +2,8 @@
   <br>
   <img src="PreviewIcon.png" alt="ErosionWQ Icon" width="130" style="border-radius: 28px;">
   <br>
-  <h1>ErosionWQ (ThaiBinh)</h1>
-  <p><strong>The Ultimate iOS Customization Toolbox, Theme Studio, App Data Manager & Cache Cleaner</strong></p>
+  <h1>Thái Bình (ErosionWQ)</h1>
+  <p><strong>Bộ Công Cụ Tinh Chỉnh iOS, Xưởng Theme, Quản Lý Dữ Liệu Ứng Dụng, Dọn Rác & Trung Tâm Giải Trí Mini Games</strong></p>
   <p>Sự kết hợp toàn diện giữa <a href="https://github.com/jailbreakdotparty/Erosion">Erosion</a> và <a href="https://github.com/kolbicz/WQFiles">WQFiles</a>, vận hành trên kỹ thuật vượt sandbox <code>worse_query</code> & bộ quét inode <code>fsgetpath</code>.</p>
 
   <p>
@@ -36,7 +36,7 @@ Kỹ thuật `worse_query` yêu cầu ứng dụng được ký kèm quyền **A
 
 ---
 
-## 🚀 Các tính năng chính (5 Tabs & Studios)
+## 🚀 Các tính năng chính (6 Tabs & Studios)
 
 ### 1. 🏠 Dashboard & Chẩn đoán Thiết bị (Home)
 - Hiển thị tên thương mại thiết bị, mã máy và bản dựng kernel iOS (ví dụ: `iPhone 16 Pro Max (iPhone17,2) · iOS 27.0.1 (24A446)`).
@@ -86,6 +86,14 @@ Kỹ thuật `worse_query` yêu cầu ứng dụng được ký kèm quyền **A
   - **Text Editor & Hex Viewer**: Xem/sửa văn bản và soi mã Hex từng byte.
   - **Vuốt để Xóa / Đổi tên (`Swipe Actions`) & Sắp xếp nâng cao**: Hỗ trợ vuốt trực tiếp trên dòng tệp/thư mục để xóa (kèm sao lưu tự động bằng APFS Clone `fclonefileat`) hoặc đổi tên; hỗ trợ tùy chọn **"Thư mục lên đầu"** và sắp xếp theo **Ngày tạo**.
   - **1-Tap File Restore**: Tự động sao lưu mọi file bị ghi đè/xóa vào `Documents/Backups`, kèm nút **"Khôi phục về đường dẫn gốc"** ngay trong menu nhấn giữ.
+
+### 6. 🎮 Trung tâm Giải trí Thái Bình (Mini Games — `MiniGamesView`)
+- Tích hợp sẵn **5 tựa game mini cổ điển** hoạt động mượt mà không cần mạng, kèm phản hồi xúc giác (`Haptic`) và tự động lưu kỷ lục điểm số (`@AppStorage`):
+  1. **2048 Thái Bình (`Game2048View`)**: Bàn cờ 4×4 hỗ trợ thao tác vuốt hoặc phím điều hướng, hoàn tác nước đi (`Undo`) và lưu kỷ lục.
+  2. **Rắn Săn Mồi (`SnakeGameView`)**: Lưới 15×15 với 3 mức tốc độ (*Chậm*, *Chuẩn*, *Siêu tốc*), hỗ trợ vuốt + phím D-Pad và tạm dừng.
+  3. **Dò Mìn Cổ Điển (`MinesweeperGameView`)**: Bãi mìn 9×9 (10 quả mìn), đảm bảo an toàn ở lượt chạm đầu tiên, tự động mở lan vùng trống và chuyển đổi nhanh giữa chế độ **⛏️ Mở ô** / **🚩 Cắm cờ** (hoặc nhấn giữ để cắm cờ).
+  4. **Cờ Caro 3×3 & 5×5 (`TicTacToeGameView`)**: Hỗ trợ bàn cờ 3×3 cổ điển hoặc 5×5 mở rộng (4 quân liên tiếp thắng), chế độ **Đấu với Máy (AI thông minh)** hoặc **2 Người chơi cùng máy**.
+  5. **Lật Hình Trí Nhớ (`MemoryMatchGameView`)**: Ghép 8 cặp biểu tượng trên bàn 4×4 với bộ đếm lượt lật và kỷ lục ít lượt nhất.
 
 ---
 

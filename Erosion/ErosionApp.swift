@@ -65,6 +65,13 @@ struct ErosionApp: App {
                         Label("Tệp tin", systemImage: "folder")
                     }
                     .tag(4)
+                NavigationStack {
+                    MiniGamesView()
+                }
+                .tabItem {
+                    Label("Giải trí", systemImage: "gamecontroller.fill")
+                }
+                .tag(5)
             }
             .environmentObject(mgr)
             .onAppear {
@@ -86,8 +93,8 @@ struct ErosionApp: App {
                     }
                 }
                 print("")
-                print("[*] ThaiBinh (ErosionWQ) v\(AppInfo.appVersion) (\(build))")
-                print("[*] Bản quyền © 2026 ThaiBinh (hoanmaster321)")
+                print("[*] Thái Bình v\(AppInfo.appVersion) (\(build))")
+                print("[*] Bản quyền © 2026 Thái Bình (hoanmaster321)")
                 print("[*] Thiết bị: \(UIDevice.current.systemName) \(UIDevice.current.systemVersion), \(machineName())")
                 group = wq.getAppGroup()
                 print("[*] App Group đang hoạt động: \(group)")
