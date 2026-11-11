@@ -10,16 +10,23 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @AppStorage("autoRespring") var autoRespring = false
+    @AppStorage("WQDeletingDisabled") var deletingDisabled = false
+    @AppStorage("WQShowItemCounts") var showItemCounts = false
     
     var body: some View {
         NavigationStack {
             List {
                 Section {
                     Toggle("Tự động Respring sau khi áp dụng", isOn: $autoRespring)
+                    Toggle("Cho phép Xóa dữ liệu (Allow Deleting)", isOn: Binding(
+                        get: { !deletingDisabled },
+                        set: { deletingDisabled = !$0 }
+                    ))
+                    Toggle("Hiển thị số lượng mục trong thư mục", isOn: $showItemCounts)
                 } header: {
-                    HeaderLabel("Cài đặt chung", symbol: "gearshape")
+                    HeaderLabel("Cài đặt chung & WQFiles v0.9", symbol: "gearshape")
                 } footer: {
-                    Text("Tự động khởi động lại SpringBoard ngay sau khi áp dụng các tinh chỉnh hệ thống.")
+                    Text("Khi tắt 'Cho phép Xóa dữ liệu', mọi thao tác xóa tệp, vuốt để xóa, xóa dữ liệu ứng dụng và dọn rác sẽ bị khóa an toàn.")
                 }
                 
                 Section {

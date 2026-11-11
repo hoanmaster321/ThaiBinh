@@ -105,7 +105,7 @@ struct ErosionApp: App {
             .alert("Chưa có quyền App Group", isPresented: $showMissingAppGroupAlert) {
                 Button("Đã hiểu", role: .cancel) {}
             } message: {
-                Text("Bản cài đặt này được ký mà không có quyền App Group (com.apple.security.application-groups), nên ứng dụng không thể truy cập ngoài Sandbox.\n\nHãy cài đặt lại qua AltStore, SideStore, Sideloadly hoặc chứng chỉ có bật quyền App Group.")
+                Text("Bản cài đặt này được ký mà không có quyền App Group (com.apple.security.application-groups), nên ứng dụng không thể truy cập ngoài Sandbox.\n\nHãy cài đặt lại qua AltStore, SideStore hoặc Impactor (các công cụ này tạo được App Group; Sideloadly mặc định không tạo), hoặc dùng chứng chỉ có bật quyền App Group.")
             }
             .overlay {
                 if mgr.shouldRespring {

@@ -1128,6 +1128,23 @@ BOOL wq_delete(NSString *path, NSString **errorText)
         NSString *backup = nil;
         if (!wq_mutation_backup(path, &mutation, &backup, errorText)) { wq_mutation_close(&mutation); return NO; }
         int rc = unlinkat(mutation.parent, name, 0);
+        if (rc != 0 && errno == EPERM) {
+            const uint32_t userLocks = UF_IMMUTABLE | UF_APPEND;
+            struct stat parentStat = {0};
+            BOOL cleared = NO;
+            if (fstat(mutation.parent, &parentStat) == 0 && (parentStat.st_flags & userLocks))
+                cleared = fchflags(mutation.parent, parentStat.st_flags & ~userLocks) == 0;
+            if ((mutation.stat.st_flags & userLocks)) {
+                if (fchflags(mutation.target, mutation.stat.st_flags & ~userLocks) == 0) cleared = YES;
+            }
+            if (cleared) {
+                wq_log(@"delete: cleared lock flags (item 0x%x, folder 0x%x) on %@",
+                       mutation.stat.st_flags, parentStat.st_flags, path);
+                rc = unlinkat(mutation.parent, name, 0);
+            } else {
+                errno = EPERM;
+            }
+        }
         int err = errno;
         wq_mutation_close(&mutation);
         if (rc != 0 && errorText) *errorText = wq_errno(err);
@@ -1183,6 +1200,80 @@ BOOL wq_rename(NSString *path, NSString *newName, NSString **errorText)
     wq_log(@"rename: %@ -> %@: %@", path, trimmed, rc == 0 ? @"OK" : wq_errno(err));
     if (rc != 0 && errorText) *errorText = err == EEXIST ? @"An item with that name already exists" : wq_errno(err);
     return rc == 0;
+}
+
+BOOL wq_move(NSString *path, NSString *destDir, NSString **errorText)
+{
+    NSString *source = WQCanonicalVarPath(path), *target = WQCanonicalVarPath(destDir);
+    NSString *name = source.lastPathComponent;
+    if (!WQAbsolutePathGrammar(source) || !WQAbsolutePathGrammar(target) || !name.length) {
+        if (errorText) *errorText = @"Đường dẫn không hợp lệ";
+        return NO;
+    }
+    NSString *sourceParent = source.stringByDeletingLastPathComponent;
+    if ([sourceParent isEqualToString:target]) {
+        if (errorText) *errorText = @"Mục này đã nằm sẵn trong thư mục đích";
+        return NO;
+    }
+    if ([target isEqualToString:source] || [target hasPrefix:[source stringByAppendingString:@"/"]]) {
+        if (errorText) *errorText = @"Không thể di chuyển thư mục vào chính nó";
+        return NO;
+    }
+    if (wq_is_backup_storage_path(source) || wq_is_backup_storage_path([target stringByAppendingPathComponent:name])) {
+        if (errorText) *errorText = @"Không thể di chuyển trực tiếp vào thư mục Sao lưu.";
+        return NO;
+    }
+    int from = wq_open_directory_flags(sourceParent, O_SEARCH);
+    if (from < 0) { if (errorText) *errorText = wq_errno(errno); return NO; }
+    int to = wq_open_directory_flags(target, O_SEARCH);
+    if (to < 0) { if (errorText) *errorText = wq_errno(errno); close(from); return NO; }
+    const char *n = name.fileSystemRepresentation;
+    int rc = renameatx_np(from, n, to, n, RENAME_EXCL);
+    if (rc != 0 && wq_is_denied(errno)) {
+        wq_grant(sourceParent);
+        wq_grant(target);
+        wq_grant(source);
+        rc = renameatx_np(from, n, to, n, RENAME_EXCL);
+    }
+    int err = errno;
+    if (rc == 0) { fsync(to); fsync(from); }
+    close(from);
+    close(to);
+    wq_log(@"move: %@ -> %@: %@", path, destDir, rc == 0 ? @"OK" : wq_errno(err));
+    if (rc != 0 && errorText) {
+        *errorText = err == EEXIST ? [NSString stringWithFormat:@"Mục \"%@\" đã tồn tại tại thư mục đích", name]
+                   : err == EXDEV ? @"Không thể di chuyển sang phân vùng khác"
+                   : wq_errno(err);
+    }
+    return rc == 0;
+}
+
+int wq_open_for_reading(NSString *path)
+{
+    return wq_open(path, O_RDONLY, 0);
+}
+
+static NSString *const kWQDeletingDisabledPref = @"WQDeletingDisabled";
+static NSString *const kWQShowItemCountsPref = @"WQShowItemCounts";
+
+BOOL wq_deleting_allowed(void)
+{
+    return ![NSUserDefaults.standardUserDefaults boolForKey:kWQDeletingDisabledPref];
+}
+
+void wq_set_deleting_allowed(BOOL allowed)
+{
+    [NSUserDefaults.standardUserDefaults setBool:!allowed forKey:kWQDeletingDisabledPref];
+}
+
+BOOL wq_show_item_counts(void)
+{
+    return [NSUserDefaults.standardUserDefaults boolForKey:kWQShowItemCountsPref];
+}
+
+void wq_set_show_item_counts(BOOL show)
+{
+    [NSUserDefaults.standardUserDefaults setBool:show forKey:kWQShowItemCountsPref];
 }
 
 #pragma mark - Inode & LaunchServices Container Enumeration
@@ -1557,6 +1648,11 @@ BOOL wq_full_scan_was_declined(void)
 
 static WQScanCancellation *wq_full_scan_begin(NSString *what, int64_t ids, double seconds)
 {
+    if (!wq_app_group()) {
+        atomic_store(&gFullScanDeclined, YES);
+        wq_log(@"scan: no App Group; full scan of %@ skipped", what);
+        return nil;
+    }
     if (gFullScanConfirm && !gFullScanConfirm(what, ids, seconds)) {
         atomic_store(&gFullScanDeclined, YES);
         wq_log(@"scan: full scan of %@ not started (%lld ids, about %.0f s)", what, (long long)ids, seconds);
@@ -2083,8 +2179,35 @@ static BOOL wq_remove_entry(int parent, NSString *name, NSString *path, unsigned
         if (fstatat(parent, item, &current, AT_SYMLINK_NOFOLLOW) != 0 || !WQSameObject(&before, &current)) return NO;
         rc = unlinkat(parent, item, directory ? AT_REMOVEDIR : 0);
     }
+    if (rc != 0 && errno == EPERM &&
+        fstatat(parent, item, &current, AT_SYMLINK_NOFOLLOW) == 0 && WQSameObject(&before, &current)) {
+        const uint32_t userLocks = UF_IMMUTABLE | UF_APPEND;
+        struct stat parentStat = {0};
+        BOOL cleared = NO;
+        if (fstat(parent, &parentStat) == 0 && (parentStat.st_flags & userLocks))
+            cleared = fchflags(parent, parentStat.st_flags & ~userLocks) == 0;
+        if ((current.st_flags & userLocks) && !S_ISLNK(current.st_mode)) {
+            int flagsFd = openat(parent, item, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC |
+                                 (directory ? O_DIRECTORY : 0));
+            struct stat opened;
+            if (flagsFd >= 0 && fstat(flagsFd, &opened) == 0 && WQSameObject(&before, &opened) &&
+                fchflags(flagsFd, opened.st_flags & ~userLocks) == 0) cleared = YES;
+            if (flagsFd >= 0) close(flagsFd);
+        }
+        if (cleared) {
+            wq_log(@"purge: cleared lock flags (item 0x%x, folder 0x%x) on %@",
+                   current.st_flags, parentStat.st_flags, path);
+            rc = unlinkat(parent, item, directory ? AT_REMOVEDIR : 0);
+        } else {
+            errno = EPERM;
+        }
+    }
     if (rc == 0 && !directory && freed) *freed += (unsigned long long)before.st_size;
-    if (rc != 0) wq_log(@"purge: %@ -> %@", path, wq_errno(errno));
+    if (rc != 0) {
+        int err = errno;
+        wq_log(@"purge: %@ -> %@ (flags 0x%x, uid %u, mode %o)", path, wq_errno(err),
+               current.st_flags, current.st_uid, current.st_mode & 07777);
+    }
     return rc == 0;
 }
 

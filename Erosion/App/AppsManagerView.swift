@@ -15,10 +15,19 @@ enum AppSortMode: String, CaseIterable {
     case backedUp = "Đã sao lưu"
 }
 
+enum AppFilterMode: String, CaseIterable {
+    case all = "Tất cả ứng dụng"
+    case apple = "Ứng dụng Apple"
+    case thirdParty = "Ứng dụng bên thứ 3"
+    case backedUp = "Đã có Sao lưu"
+}
+
 struct AppsManagerView: View {
     @StateObject private var engine = WQEngine.shared
+    @AppStorage("WQDeletingDisabled") private var deletingDisabled = false
     @State private var searchText = ""
     @State private var sortMode: AppSortMode = .size
+    @State private var filterMode: AppFilterMode = .all
     @State private var selectedApp: AppInfoItem? = nil
     @State private var showActionSheet = false
     @State private var showConfirmClear = false
@@ -33,11 +42,19 @@ struct AppsManagerView: View {
     @State private var navigateToContainerPath: String? = nil
     
     var filteredApps: [AppInfoItem] {
-        let base: [AppInfoItem]
-        if searchText.isEmpty {
-            base = engine.apps
-        } else {
-            base = engine.apps.filter {
+        var base = engine.apps
+        switch filterMode {
+        case .all:
+            break
+        case .apple:
+            base = base.filter { $0.bundleID.hasPrefix("com.apple.") }
+        case .thirdParty:
+            base = base.filter { !$0.bundleID.hasPrefix("com.apple.") }
+        case .backedUp:
+            base = base.filter { $0.hasBackup }
+        }
+        if !searchText.isEmpty {
+            base = base.filter {
                 $0.name.localizedCaseInsensitiveContains(searchText) ||
                 $0.bundleID.localizedCaseInsensitiveContains(searchText)
             }
@@ -118,6 +135,39 @@ struct AppsManagerView: View {
                 
                 Image(systemName: "ellipsis")
                     .foregroundStyle(.tertiary)
+            }
+        }
+        .contextMenu {
+            Button {
+                UIPasteboard.general.string = app.bundleID
+                Haptic.shared.play(.light)
+            } label: {
+                Label("Sao chép Bundle ID", systemImage: "tag")
+            }
+
+            Button {
+                UIPasteboard.general.string = app.containerPath
+                Haptic.shared.play(.light)
+            } label: {
+                Label("Sao chép Đường dẫn Container", systemImage: "doc.on.doc")
+            }
+
+            Button {
+                navigateToContainerPath = app.containerPath
+            } label: {
+                Label("Mở thư mục Dữ liệu (Container)", systemImage: "folder")
+            }
+
+            Divider()
+
+            Button {
+                engine.backupApp(app) { success, msg in
+                    alertTitle = success ? "Sao lưu hoàn tất" : "Sao lưu thất bại"
+                    alertMessage = msg
+                    showAlert = true
+                }
+            } label: {
+                Label("Sao lưu Dữ liệu ngay", systemImage: "externaldrive.badge.plus")
             }
         }
     }
@@ -228,13 +278,19 @@ struct AppsManagerView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Picker("Sắp xếp", selection: $sortMode) {
+                        Picker("Sắp xếp theo", selection: $sortMode) {
                             ForEach(AppSortMode.allCases, id: \.self) { mode in
                                 Text(mode.rawValue).tag(mode)
                             }
                         }
+                        Divider()
+                        Picker("Hiển thị", selection: $filterMode) {
+                            ForEach(AppFilterMode.allCases, id: \.self) { fMode in
+                                Text(fMode.rawValue).tag(fMode)
+                            }
+                        }
                     } label: {
-                        Label("Sắp xếp", systemImage: "arrow.up.arrow.down.circle")
+                        Label("Sắp xếp & Lọc", systemImage: filterMode == .all ? "arrow.up.arrow.down.circle" : "line.3.horizontal.decrease.circle.fill")
                     }
                 }
             }
@@ -288,9 +344,16 @@ struct AppsManagerView: View {
                 Button("Mở Container trong Trình duyệt Tệp") {
                     navigateToContainerPath = app.containerPath
                 }
+
+                Button("Sao chép Bundle ID") {
+                    UIPasteboard.general.string = app.bundleID
+                    Haptic.shared.play(.light)
+                }
                 
-                Button("Xóa sạch Dữ liệu Ứng dụng", role: .destructive) {
-                    showConfirmClear = true
+                if !deletingDisabled {
+                    Button("Xóa sạch Dữ liệu Ứng dụng", role: .destructive) {
+                        showConfirmClear = true
+                    }
                 }
                 
                 Button("Hủy", role: .cancel) {}

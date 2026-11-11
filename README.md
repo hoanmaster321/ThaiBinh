@@ -65,26 +65,36 @@ Kỹ thuật `worse_query` yêu cầu ứng dụng được ký kèm quyền **A
 - **Custom File Overwrite & Presets (`OperationsView`)**:
   - Tích hợp danh sách Preset các đường dẫn `SystemGroup` quan trọng để ghi đè/xuất file nhanh chóng kèm cơ chế tự động sao lưu.
 
-### 3. 📦 Quản lý Dữ liệu Ứng dụng (App Manager — WQFiles v0.8)
-- **Liệt kê Container siêu tốc từ LaunchServices DB (`WQLaunchServices`)**: Hỗ trợ 6 cấu trúc bản ghi `CSStore2` trên **iOS 26.x, 27.0, 27.2 (`27.2`, `27.2b`, `27.2c`, `27.2d`)**, dò ngược từ inode mới nhất (`wq_scan_for_ls_store`) để tìm cơ sở dữ liệu `com.apple.LaunchServices-*.csstore` chỉ trong vài giây mà không cần quét toàn bộ ổ đĩa, đồng thời tự động ánh xạ Bundle ID cho container trên iOS 27.2 và tải trực tiếp icon PNG từ gói `.app` trên iOS 26.
-- **Thanh chỉ mục chữ cái A–Z**: Khi sắp xếp theo tên ứng dụng, hiển thị thanh nhảy nhanh A–Z bên cạnh phải.
+### 3. 📦 Quản lý Dữ liệu Ứng dụng (App Manager — WQFiles v0.9)
+- **Liệt kê Container siêu tốc từ LaunchServices DB (`WQLaunchServices`)**: Hỗ trợ 8 cấu trúc bản ghi `CSStore2` trên **iOS 26.x (`26`, `26.5`, `26.5b`), 27.0, 27.2 (`27.2`, `27.2b`, `27.2c`, `27.2d`)**, tự động từ chối cơ sở dữ liệu nếu layout chỉ ánh xạ được dưới 50% container (`#37`), dò ngược từ inode mới nhất (`wq_scan_for_ls_store`) để tìm cơ sở dữ liệu `com.apple.LaunchServices-*.csstore` chỉ trong vài giây mà không cần quét toàn bộ ổ đĩa, đồng thời tự động ánh xạ Bundle ID cho container trên iOS 27.2 và tải trực tiếp icon PNG từ gói `.app` trên iOS 26.
+- **Bộ lọc Hiển thị Ứng dụng (`#28`) & Thanh chỉ mục chữ cái A–Z**: Lọc nhanh theo *Tất cả ứng dụng*, *Ứng dụng Apple*, *Ứng dụng bên thứ 3*, hoặc *Đã có Sao lưu*; khi sắp xếp theo tên ứng dụng, hiển thị thanh nhảy nhanh A–Z bên cạnh phải.
+- **Menu nhấn giữ Ứng dụng (`#27`) & Khôi phục từ AppBackups**: Nhấn giữ ứng dụng bất kỳ để **Sao chép Bundle ID**, **Sao chép Đường dẫn Container**, **Mở thư mục Dữ liệu**, hoặc nhấn giữ trực tiếp thư mục trong `AppBackups` để **Khôi phục bản Sao lưu**.
 - **Multi-Snapshot Backup Manager**: Tạo nhiều bản sao lưu theo mốc thời gian (`Documents/AppBackups/<bundleID>/<timestamp>`), xem dung lượng từng bản, chọn khôi phục bất kỳ mốc thời gian nào hoặc xóa bản cũ.
 - **Import & Share Backup (`.zip`)**: Xuất bản sao lưu ra file `.zip` qua AirDrop/Files hoặc **Nhập file `.zip` sao lưu từ ngoài vào** để khôi phục dữ liệu giữa các thiết bị.
 - **1-Tap Edit App Preferences (`.plist`)**: Mở thẳng file `<Container>/Library/Preferences/<bundleID>.plist` (`UserDefaults`) vào trình sửa Plist chỉ với 1 chạm.
 - **Clear App Data**: Đặt lại ứng dụng về trạng thái mới cài đặt (có tùy chọn tự động sao lưu trước khi xóa).
 
 ### 4. 🧹 Dọn dẹp Bộ nhớ đệm (Cache Cleaner)
-- Quét sạch `Library/Caches` và `tmp` trên cả 4 nhánh MCM (`Application`, `PluginKitPlugin`, `InternalDaemon`, `AppGroup`) cùng với `lsd.iconscache` và `osanalyticsdiagnostics` trong `SystemGroup`.
+- Quét sạch `Library/Caches` và `tmp` trên cả 4 nhánh MCM (`Application`, `PluginKitPlugin`, `InternalDaemon`, `AppGroup`) cùng với `lsd.iconscache` và `osanalyticsdiagnostics` trong `SystemGroup` (tự động gỡ cờ khóa `UF_IMMUTABLE | UF_APPEND` khi gặp `EPERM` - `#8`).
 - Bộ lọc chọn nhanh: *Chọn tất cả*, *Lớn (>50 MB)*, *Bỏ chọn*, kèm thanh tìm kiếm và báo cáo chính xác dung lượng giải phóng.
 
-### 5. 📁 Trình duyệt File chuyên sâu & Trình xem SQLite (File Browser — WQFiles v0.8)
-- Bookmark truy cập nhanh tất cả các nhánh MCM Container, kèm hiển thị icon & tên ứng dụng trực tiếp trên từng thư mục UUID.
-- Tự động dò tìm các container hệ thống trong `/var/containers/Shared/SystemGroup` trên iOS 27.0.1+ (`wq_known_system_groups`).
+### 5. 📁 Trình duyệt File chuyên sâu, Tô màu Cú pháp, Media Player & SQLite (File Browser — WQFiles v0.9)
+- **Chọn nhiều mục (`Select`), Di chuyển liên ứng dụng (`Move Here`) & Nén/Giải nén ZIP (`WQArchive`)**:
+  - Nhấn **Chọn** ở góc phải trên để chọn nhiều tệp/thư mục cùng lúc và thực hiện **Di chuyển (`Move`)**, **Nén ZIP (`Compress`)** hoặc **Xóa (`Delete`)** (`#9`).
+  - **Di chuyển dữ liệu xuyên ứng dụng (`wq_move`)**: Chọn tệp/thư mục, mở bất kỳ thư mục nào của ứng dụng khác và nhấn **Di chuyển vào đây (`Move Here`)** (an toàn tuyệt đối, không bao giờ ghi đè tệp đã tồn tại).
+  - **Nén & Giải nén ZIP an toàn (`WQArchive`)**: Nén trực tiếp qua `WQAccess` và giải nén tệp `.zip` (hỗ trợ cả ZIP64, kiểm tra CRC32, chặn đường dẫn thoát thư mục và bỏ qua symlink).
+  - **Nhập nhiều tệp cùng lúc hoặc Nhập cả thư mục (`#23`)**: Tự động đánh số thứ tự (`"Tên 2"`) nếu trùng tên thay vì ghi đè.
+- **Hiển thị Bundle ID dưới tên ứng dụng (`#27`) & Đếm số lượng mục con (`#35`)**:
+  - Danh sách container hiển thị trực tiếp Bundle ID dưới tên ứng dụng thay vì mã UUID của thư mục.
+  - Tùy chọn **Hiển thị số lượng mục trong thư mục (`Show Item Counts`)** tải số mục con ở chế độ nền và hiển thị trực tiếp.
+- **Tùy chọn Cho phép Xóa dữ liệu (`Allow Deleting` - `#32`)**: Khi tắt, khóa toàn bộ thao tác xóa tệp, vuốt trái để xóa (`#36`), xóa dữ liệu ứng dụng và dọn rác.
 - **Bộ công cụ xem & sửa file mạnh mẽ**:
+  - **Tô màu Cú pháp 17 ngôn ngữ (`WQSyntax` - `#34`)**: Tô màu mã nguồn và dữ liệu trực tiếp khi xem và khi đang chỉnh sửa đối với XML/Plist, JSON, YAML, INI/TOML, CSS, SQL, Markdown, C/Objective-C, Swift, JavaScript/TypeScript, Java/Kotlin, Go, Rust, Python, Shell, Ruby, Lua (tự nhận diện dòng `#!` hoặc nội dung XML/JSON).
+  - **Trình phát Đa phương tiện (`MediaPlayerView` - `#25`, `#29`)**: Phát trực tiếp các tệp âm thanh & video (`mp3`, `m4a`, `wav`, `flac`, `mp4`, `mov`…) bằng trình phát hệ thống (hỗ trợ Picture-in-Picture).
   - **Trình xem Cơ sở dữ liệu SQLite (Chỉ đọc, Truy vấn SQL & Xuất CSV - `SQLiteViewer`)**: Tự động nhận diện tệp `.sqlite`, `.db`, `.sqlite3` (hoặc header `SQLite format 3`), mở bản sao tạm thời kèm tệp `-wal` ở chế độ `PRAGMA query_only = ON`, duyệt danh sách bảng & view kèm số dòng, phân trang dữ liệu, xem chi tiết từng dòng, chạy truy vấn `SELECT` / `PRAGMA` / `EXPLAIN` và **Xuất kết quả ra tệp `.csv`**.
   - **Plist Viewer & Raw XML Editor**: Sửa dạng cây Key-Value hoặc chuyển sang sửa mã XML trực tiếp (tự động giải mã Binary Plist `bplist00` sang XML và đóng gói lại đúng định dạng gốc khi lưu).
   - **Text Editor & Hex Viewer**: Xem/sửa văn bản và soi mã Hex từng byte.
-  - **Vuốt để Xóa / Đổi tên (`Swipe Actions`) & Sắp xếp nâng cao**: Hỗ trợ vuốt trực tiếp trên dòng tệp/thư mục để xóa (kèm sao lưu tự động bằng APFS Clone `fclonefileat`) hoặc đổi tên; hỗ trợ tùy chọn **"Thư mục lên đầu"** và sắp xếp theo **Ngày tạo**.
+  - **Vuốt sang trái để Xóa / Đổi tên (`Swipe Actions` - `#36`) & Sắp xếp nâng cao**: Hỗ trợ vuốt sang trái trên dòng tệp/thư mục để xóa (kèm sao lưu tự động bằng APFS Clone `fclonefileat`) hoặc đổi tên; hỗ trợ tùy chọn **"Thư mục lên đầu"** và sắp xếp theo **Ngày tạo**.
   - **1-Tap File Restore**: Tự động sao lưu mọi file bị ghi đè/xóa vào `Documents/Backups`, kèm nút **"Khôi phục về đường dẫn gốc"** ngay trong menu nhấn giữ.
 
 ### 6. 🎮 Trung tâm Giải trí Thái Bình (Mini Games — `MiniGamesView`)

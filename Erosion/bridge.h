@@ -12,6 +12,8 @@
 #import "Exploits/worse_query.h"
 #import "Exploits/pathleak.h"
 #import "WQCore/WQAccess.h"
+#import "WQCore/WQArchive.h"
+#import "WQCore/WQSyntax.h"
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <UIKit/UIKit.h>

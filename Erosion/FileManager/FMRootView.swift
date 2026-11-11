@@ -26,6 +26,8 @@ enum FSURL {
 }
 
 struct FMRootView: View {
+    @AppStorage("WQDeletingDisabled") private var deletingDisabled = false
+    @AppStorage("WQShowItemCounts") private var showItemCounts = false
     @State private var showCustomPathAlert = false
     @State private var customPathInput = ""
     @State private var navigateToCustomURL: URL? = nil
@@ -107,6 +109,23 @@ struct FMRootView: View {
                     }
                 } header: {
                     HeaderLabel("Điều hướng nhanh", symbol: "magnifyingglass")
+                }
+
+                Section {
+                    Toggle(isOn: Binding(
+                        get: { !deletingDisabled },
+                        set: { deletingDisabled = !$0 }
+                    )) {
+                        Label("Cho phép Xóa dữ liệu", systemImage: "trash")
+                    }
+
+                    Toggle(isOn: $showItemCounts) {
+                        Label("Hiển thị số lượng mục trong thư mục", systemImage: "number")
+                    }
+                } header: {
+                    HeaderLabel("Cài đặt Trình duyệt tệp (WQFiles v0.9)", symbol: "slider.horizontal.3")
+                } footer: {
+                    Text("Cho phép Xóa dữ liệu: khi tắt, mọi thao tác Xóa, Vuốt để xóa, Xóa dữ liệu ứng dụng và Dọn rác đều bị khóa.\nHiển thị số lượng mục: đếm số mục con trong mỗi thư mục ở chế độ nền.")
                 }
             }
             .navigationTitle("Trình duyệt Tệp")

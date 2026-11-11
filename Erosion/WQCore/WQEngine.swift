@@ -77,6 +77,7 @@ final class WQEngine: ObservableObject {
     
     @Published var activeAppGroup: String = ""
     @Published var deviceLine: String = ""
+    @Published var pendingMovePaths: [String] = []
     
     private init() {
         self.deviceLine = wq_device_line()
@@ -96,7 +97,7 @@ final class WQEngine: ObservableObject {
     func scanApps(forceRefresh: Bool = false) {
         guard !isScanningApps else { return }
         isScanningApps = true
-        scanAppProgress = "Đang đọc cơ sở dữ liệu ứng dụng (LaunchServices v0.8)..."
+        scanAppProgress = "Đang đọc cơ sở dữ liệu ứng dụng (LaunchServices v0.9)..."
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
@@ -438,6 +439,117 @@ final class WQEngine: ObservableObject {
             }
             DispatchQueue.main.async {
                 completion(totalFreed)
+            }
+        }
+    }
+    
+    // MARK: - WQFiles v0.9 Move, Compress, Extract & Free Name Helpers
+    
+    func startMove(_ paths: [String]) {
+        pendingMovePaths = paths
+    }
+    
+    func cancelMove() {
+        pendingMovePaths = []
+    }
+    
+    func canMove(to destDir: String) -> Bool {
+        guard !pendingMovePaths.isEmpty else { return false }
+        for path in pendingMovePaths {
+            let parent = (path as NSString).deletingLastPathComponent
+            if parent == destDir { return false }
+            if destDir == path || destDir.hasPrefix(path + "/") { return false }
+        }
+        return true
+    }
+    
+    func movePendingItems(to destDir: String, completion: @escaping (Bool, String) -> Void) {
+        let paths = pendingMovePaths
+        guard !paths.isEmpty else { return }
+        pendingMovePaths = []
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            var failed = 0
+            var firstErr: String? = nil
+            for p in paths {
+                var err: NSString?
+                if !wq_move(p, destDir, &err) {
+                    failed += 1
+                    if firstErr == nil {
+                        firstErr = "\((p as NSString).lastPathComponent): \((err as String?) ?? "Thất bại")"
+                    }
+                }
+            }
+            DispatchQueue.main.async {
+                if failed == 0 {
+                    completion(true, "Đã di chuyển \(paths.count) mục vào thư mục hiện tại.")
+                } else {
+                    let msg = paths.count == 1 ? (firstErr ?? "Không thể di chuyển")
+                        : "Không thể di chuyển \(failed)/\(paths.count) mục.\n\n\(firstErr ?? "")"
+                    completion(false, msg)
+                }
+            }
+        }
+    }
+    
+    func unusedName(in dirPath: String, base: String, ext: String?) -> String {
+        let existing = Set((wq_list(dirPath, nil) ?? []).map { $0.lowercased() })
+        for n in 1..<10000 {
+            let stem = n == 1 ? base : "\(base) \(n)"
+            let candidate: String
+            if let e = ext, !e.isEmpty {
+                candidate = (stem as NSString).appendingPathExtension(e) ?? "\(stem).\(e)"
+            } else {
+                candidate = stem
+            }
+            if !existing.contains(candidate.lowercased()) {
+                return candidate
+            }
+        }
+        return "\(base) \(UUID().uuidString)"
+    }
+    
+    func compressItems(_ paths: [String], in dirPath: String, completion: @escaping (Bool, String) -> Void) {
+        guard !paths.isEmpty else { return }
+        DispatchQueue.global(qos: .userInitiated).async {
+            let base = paths.count == 1 ? ((paths[0] as NSString).lastPathComponent) : "Archive"
+            let zipName = self.unusedName(in: dirPath, base: base, ext: "zip")
+            let destZip = (dirPath as NSString).appendingPathComponent(zipName)
+            var skipped: UInt = 0
+            var err: NSString?
+            let ok = wq_compress_items(paths, destZip, &skipped, &err)
+            DispatchQueue.main.async {
+                if ok {
+                    let note = skipped > 0
+                        ? "Đã tạo \(zipName). Đã bỏ qua \(skipped) liên kết tượng trưng hoặc tệp đặc biệt."
+                        : "Đã nén thành công \(paths.count) mục thành \(zipName)."
+                    completion(true, note)
+                } else {
+                    completion(false, (err as String?) ?? "Không thể tạo tệp ZIP.")
+                }
+            }
+        }
+    }
+    
+    func extractZip(_ zipPath: String, in dirPath: String, completion: @escaping (Bool, String) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let rawBase = ((zipPath as NSString).lastPathComponent as NSString).deletingPathExtension
+            let base = rawBase.isEmpty ? "Archive" : rawBase
+            let folderName = self.unusedName(in: dirPath, base: base, ext: nil)
+            let destFolder = (dirPath as NSString).appendingPathComponent(folderName)
+            var files: UInt = 0
+            var skipped: UInt = 0
+            var err: NSString?
+            let ok = wq_extract_zip(zipPath, destFolder, &files, &skipped, &err)
+            DispatchQueue.main.async {
+                if ok {
+                    let note = skipped > 0
+                        ? "Đã giải nén \(files) tệp vào thư mục \(folderName) (bỏ qua \(skipped) symlink)."
+                        : "Đã giải nén \(files) tệp vào thư mục \(folderName)."
+                    completion(true, note)
+                } else {
+                    completion(false, (err as String?) ?? "Không thể giải nén tệp ZIP.")
+                }
             }
         }
     }

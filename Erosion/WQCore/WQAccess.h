@@ -86,6 +86,17 @@ BOOL wq_delete(NSString *path, NSString *_Nullable *_Nullable errorText);
 BOOL wq_backup_unit_deletable(NSString *path);
 BOOL wq_delete_backup(NSString *path, NSString *_Nullable *_Nullable errorText);
 BOOL wq_rename(NSString *path, NSString *newName, NSString *_Nullable *_Nullable errorText);
+// Moves a file or folder into destDir (same volume), keeping its name. Never
+// replaces an existing item; refuses moves into itself and into backups.
+BOOL wq_move(NSString *path, NSString *destDir, NSString *_Nullable *_Nullable errorText);
+// Read-only descriptor for a regular file (asks for access when refused), or -1.
+int wq_open_for_reading(NSString *path);
+
+// Settings: Allow Deleting (on by default) & Show Item Counts (off by default)
+BOOL wq_deleting_allowed(void);
+void wq_set_deleting_allowed(BOOL allowed);
+BOOL wq_show_item_counts(void);
+void wq_set_show_item_counts(BOOL show);
 
 // lstat with access retry. Returns NO if the item does not exist.
 BOOL wq_stat(NSString *path, struct stat *st);

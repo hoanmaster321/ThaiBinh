@@ -11,6 +11,7 @@ import Combine
 
 struct CacheCleanerView: View {
     @StateObject private var engine = WQEngine.shared
+    @AppStorage("WQDeletingDisabled") private var deletingDisabled = false
     @State private var searchText = ""
     @State private var showConfirmClean = false
     @State private var alertTitle = ""
@@ -124,6 +125,12 @@ struct CacheCleanerView: View {
                 
                 Section {
                     Button(role: .destructive) {
+                        if deletingDisabled {
+                            alertTitle = "Đã khóa thao tác Xóa"
+                            alertMessage = "Hãy bật 'Cho phép Xóa dữ liệu' trong Cài đặt để dọn dẹp bộ nhớ đệm."
+                            showAlert = true
+                            return
+                        }
                         engine.cleanCrashLogs { freed in
                             alertTitle = "Đã dọn Chẩn đoán & Icon Cache"
                             alertMessage = "Đã giải phóng \(wq_size_text(freed)) dữ liệu chẩn đoán hệ thống."
@@ -134,9 +141,10 @@ struct CacheCleanerView: View {
                         HStack {
                             Label("Dọn nhanh Chẩn đoán & Icon Cache (SystemGroup)", systemImage: "stethoscope")
                             Spacer()
-                            Image(systemName: "trash")
+                            Image(systemName: deletingDisabled ? "lock.fill" : "trash")
                         }
                     }
+                    .disabled(deletingDisabled)
                 }
                 
                 Section {
@@ -237,7 +245,7 @@ struct CacheCleanerView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.red)
-                    .disabled(totalSelectedBytes == 0 || engine.isCleaningCaches)
+                    .disabled(totalSelectedBytes == 0 || engine.isCleaningCaches || deletingDisabled)
                 }
             }
             .alert("Xác nhận dọn Bộ nhớ đệm?", isPresented: $showConfirmClean) {
