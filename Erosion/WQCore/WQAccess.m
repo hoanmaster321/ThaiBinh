@@ -1134,12 +1134,12 @@ BOOL wq_delete(NSString *path, NSString **errorText)
             BOOL cleared = NO;
             if (fstat(mutation.parent, &parentStat) == 0 && (parentStat.st_flags & userLocks))
                 cleared = fchflags(mutation.parent, parentStat.st_flags & ~userLocks) == 0;
-            if ((mutation.stat.st_flags & userLocks)) {
-                if (fchflags(mutation.target, mutation.stat.st_flags & ~userLocks) == 0) cleared = YES;
+            if ((mutation.before.st_flags & userLocks)) {
+                if (fchflags(mutation.fd, mutation.before.st_flags & ~userLocks) == 0) cleared = YES;
             }
             if (cleared) {
                 wq_log(@"delete: cleared lock flags (item 0x%x, folder 0x%x) on %@",
-                       mutation.stat.st_flags, parentStat.st_flags, path);
+                       mutation.before.st_flags, parentStat.st_flags, path);
                 rc = unlinkat(mutation.parent, name, 0);
             } else {
                 errno = EPERM;
