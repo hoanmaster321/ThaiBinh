@@ -171,15 +171,15 @@ struct FileRow: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if !deletingDisabled {
                 Button(role: .destructive) {
-                    var error: NSString?
-                    if wq_delete(file.fileURL.path, &error) {
+                    var wqErr: NSString?
+                    if wq_delete(file.fileURL.path, &wqErr) {
                         mgr.refreshFiles.toggle()
                     } else {
                         do {
                             try fm.removeItem(at: file.fileURL)
                             mgr.refreshFiles.toggle()
                         } catch {
-                            Alertinator.shared.alert(title: "Không thể xóa tệp!", body: (error as String?) ?? error.localizedDescription)
+                            Alertinator.shared.alert(title: "Không thể xóa tệp!", body: (wqErr as String?) ?? error.localizedDescription)
                         }
                     }
                 } label: {
@@ -389,15 +389,15 @@ struct FileRow: View {
                 Divider()
 
                 Button(role: .destructive) {
-                    var error: NSString?
-                    if wq_delete(file.fileURL.path, &error) {
+                    var wqErr: NSString?
+                    if wq_delete(file.fileURL.path, &wqErr) {
                         mgr.refreshFiles.toggle()
                     } else {
                         do {
                             try fm.removeItem(at: file.fileURL)
                             mgr.refreshFiles.toggle()
                         } catch {
-                            Alertinator.shared.alert(title: "Không thể xóa tệp!", body: (error as String?) ?? error.localizedDescription)
+                            Alertinator.shared.alert(title: "Không thể xóa tệp!", body: (wqErr as String?) ?? error.localizedDescription)
                         }
                     }
                 } label: {

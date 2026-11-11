@@ -99,7 +99,7 @@ struct MediaPlayerView: View {
 
             var err: NSString?
             let ok = wq_copy_to_local(sourcePath, localPath, &err)
-            wq_log("media: %@ -> %@", sourcePath, ok ? "OK" : (err as String? ?? "failed"))
+            print("[wq] media: \(sourcePath) -> \(ok ? "OK" : (err as String? ?? "failed"))")
 
             DispatchQueue.main.async {
                 self.isLoading = false
